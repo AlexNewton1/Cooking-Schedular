@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">Cooking Scheduler</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_show_times">ShowTimes</string>
+
+    <!--.............................HOME SCREEN STRINGS.......................................-->
+    <string name="home_screen_new">Create New Meal</string>
+    <string name="home_screen_load">Load Last Meal</string>
+    <string name="no_upcoming_alarms">No Upcoming Reminders</string>
+    <string name="title_activity_upcoming_alarms">Upcoming Reminders</string>
+    <string name="hold_to_update">Long hold to edit items</string>
+    <string name="upcoming_reminders">Upcoming Reminders</string>
+
+
+    <!--.............................ADD ITEM SCREEN STRINGS.......................................-->
+    <string name="item_screen_banner_ad">ca-app-pub-3940256099942544/6300978111</string> <!--TODO - CHANGE TO PROPER AD KEY -->
+    <string name="no_food_item_found">Please add at least one food item</string>
+    <string name="no_previous_meal">No previous meal found</string>
+    <string name="name_no_pipe">Name can\'t contain the pipe character \'|\'</string>
+    <string name="no_name_time">Please enter a name and cooking time</string>
+    <string name="food_not_ready_on_time">Food can\'t be ready at this time\nPlease select a different time/date</string>
+
+    <!-- ....................   CHOOSE READY TIME DIALOG STRINGS    ...........................-->
+    <string name="chooseReadyTimeTitle">Choose Meal Time</string>
+    <string name="haveFoodReadyAt">Have Food\nReady At:</string>
+    <string name="foodReadyAt">Food Will Be Ready At: </string>
+    <string name="ASAP_time_select">As Soon As Possible</string>
+    <string name="manual_time_select">Manually Choose a Time</string>
+    <string name="reminders">Reminders</string>
+    <string name="showTimings">Show Times</string>
+
+    <!--...........................TIMINGS PAGE STRINGS........................................-->
+    <string name="timing_screen_banner_ad">ca-app-pub-3940256099942544/6300978111</string> <!--TODO - CHANGE TO PROPER AD KEY -->
+    <string name="minutes">mins</string>
+
+
+</resources>
