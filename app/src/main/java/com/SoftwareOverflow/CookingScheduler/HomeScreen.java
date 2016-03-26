@@ -2,24 +2,33 @@ package com.SoftwareOverflow.CookingScheduler;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
-import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ImageView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class HomeScreen extends AppCompatActivity implements Dialog.OnClickListener{
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+
+public class HomeScreen extends AppCompatActivity implements Dialog.OnClickListener {
+
+    //TODO - add in app billing for pro version (ad free & save meals)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,81 +36,82 @@ public class HomeScreen extends AppCompatActivity implements Dialog.OnClickListe
         setContentView(R.layout.activity_home_screen);
 
         //force portrait for phones
-        if(getResources().getBoolean(R.bool.portrait_only)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-
-        Display display = getWindowManager().getDefaultDisplay();
-        DisplayMetrics outMetrics = new DisplayMetrics ();
-        display.getMetrics(outMetrics);
-        ImageView logo = (ImageView) findViewById(R.id.homeScreenImageView);
-        int size = Math.min(outMetrics.heightPixels, outMetrics.widthPixels);
-        logo.getLayoutParams().height = size/2;
-        logo.getLayoutParams().width = size/2;
+        if (getResources().getBoolean(R.bool.portrait_only))
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
     }
 
-    public void createMeal(View v){
-        Intent i = new Intent(this, ItemScreen.class);
-        if (v.getId() == R.id.loadPreviousMeal) i.putExtra("loadValues", true);
-        startActivity(i);
+    public void createMeal(View v) {
+        startActivity(new Intent(this, ItemScreen.class));
     }
+    public void getTimings(View v){
+        SharedPreferences sharedPrefs = getSharedPreferences("foodItems", MODE_PRIVATE);
+        String jsonString = sharedPrefs.getString("jsonString", "");
+        Long readyTimeMillis = sharedPrefs.getLong("readyTime", 0);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_home_screen, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        switch(id){
-            case R.id.reminders_menu_item:
-                showUpcomingReminders();
+        if(!jsonString.matches("") && readyTimeMillis!=0) {
+            Calendar readyTimeCal = Calendar.getInstance();
+            readyTimeCal.setTimeInMillis(readyTimeMillis);
+            startActivity(new Intent(this, ShowTimes.class).putExtra("readyTimeCal", readyTimeCal).putExtra("jsonString", jsonString));
         }
+        else Toast.makeText(this, "No previous timings found.", Toast.LENGTH_SHORT).show();
+    }
 
-        return super.onOptionsItemSelected(item);
+    public void loadMeal(View v){
+        //TODO - check if upgraded before showing saved meals.....
+        MealDatabase mealDB = new MealDatabase(HomeScreen.this, null);
+        if(mealDB.getRowNum()!=0) startActivity(new Intent(HomeScreen.this, SavedMeals.class));
+        else Toast.makeText(HomeScreen.this, "No Saved Meals", Toast.LENGTH_SHORT).show();
     }
 
     private void showUpcomingReminders() {
-        SharedPreferences sharedPrefs = getSharedPreferences("alarms", MODE_PRIVATE);
-        String alarmString = sharedPrefs.getString("alarmInfo", "");
+        final List<AlarmClass> alarmList = JsonHandler.getAlarmList(getApplicationContext());
+        Collections.sort(alarmList);
 
-        if(!alarmString.equals("")){
-            View dialogView = View.inflate(this, R.layout.upcoming_reminders_dialog, null);
-            ListView alarmList = (ListView) dialogView.findViewById(R.id.alarmListView);
-            final String[] adapterStrings = alarmString.split("\\|\\|");
-            ListAdapter adapter = new UpcomingRemindersAdapter(this, adapterStrings);
-            alarmList.setAdapter(adapter);
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-            dialogBuilder.setView(dialogView)
-                    .setNegativeButton("Cancel", this)
-                    .setPositiveButton("Delete All Reminders", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(HomeScreen.this);
-                            builder.setTitle("Delete All Reminders?\nThis Can't Be Undone").setNegativeButton("Cancel", this)
-                                    .setPositiveButton("Delete All Reminders", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            for (String info : adapterStrings) {
-                                                String[] splitInfo = info.split("\\|");
-                                                ShowTimes.cancelPendingIntent(splitInfo[0], Integer.parseInt(splitInfo[2]), getApplicationContext(), true);
-                                            }
-                                            dialog.dismiss();
-                                            showUpcomingReminders();
-                                        }
-                                    }).show();
-                        }
-                    });
+        if (alarmList.size() > 0) {
+            View dialogView = View.inflate(this, R.layout.dialog_reminders, null);
+            ListView alarmListView = (ListView) dialogView.findViewById(R.id.alarmListView);
+            final String[] adapterStrings = new String[alarmList.size()];
+            for (int i = 0; i < alarmList.size(); i++) {
+                adapterStrings[i] = alarmList.get(i).getInfo();
+            }
+            ListAdapter adapter = new AdapterReminders(this, adapterStrings);
+            alarmListView.setAdapter(adapter);
+            final AlertDialog alertDialog = new AlertDialog.Builder(this).setView(dialogView).show();
 
-            final Dialog mainDialog = dialogBuilder.show();
+            Button cancelButton = (Button) alertDialog.findViewById(R.id.cancelRemindersButton);
+            Button deleteAllButton = (Button) alertDialog.findViewById(R.id.deleteAllRemindersButton);
+            deleteAllButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new AlertDialog.Builder(HomeScreen.this)
+                            .setTitle("Delete All Reminders?\nThis Can't Be Undone").setNegativeButton("Cancel", HomeScreen.this)
+                            .setPositiveButton("Delete All Reminders", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    for (AlarmClass alarm : alarmList) {
+                                        ShowTimes.cancelPendingIntent(alarm.name, alarm.id, getApplicationContext(), false);
+                                    }
+                                    dialog.dismiss();
+                                    alertDialog.dismiss();
+                                    showUpcomingReminders();
+                                }
+                            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }).show();
+                }
+            });
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    alertDialog.dismiss();
+                }
+            });
 
-            alarmList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+            alarmListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                     new AlertDialog.Builder(HomeScreen.this)
@@ -111,25 +121,80 @@ public class HomeScreen extends AppCompatActivity implements Dialog.OnClickListe
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
                                 }
-                            }).setPositiveButton("Delete Reminder", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            String[] info = adapterStrings[position].split("\\|");
-                            ShowTimes.cancelPendingIntent(info[0], Integer.parseInt(info[2]), getApplicationContext(), true);
-                            dialog.dismiss();
-                            mainDialog.dismiss();
-                            showUpcomingReminders();
-                        }
-                    }).show();
-
+                            })
+                            .setPositiveButton("Delete Reminder", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    AlarmClass alarm = alarmList.get(position);
+                                    ShowTimes.cancelPendingIntent(alarm.name, alarm.id, getApplicationContext(), true);
+                                    alertDialog.dismiss();
+                                    showUpcomingReminders();
+                                    dialog.dismiss();
+                                }
+                            }).show();
                     return true;
                 }
             });
-        }else Toast.makeText(this, R.string.no_upcoming_alarms, Toast.LENGTH_SHORT).show();
+        } else Toast.makeText(this, R.string.no_upcoming_alarms, Toast.LENGTH_SHORT).show();
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_home_screen, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.reminders_menu_item:
+                showUpcomingReminders();
+                break;
+            case R.id.upgrade_menu_item:
+                startActivity(new Intent(HomeScreen.this, UpgradeScreen.class));
+                break;
+            case R.id.show_saved_meals_menu_item:
+                loadMeal(getWindow().getDecorView());
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+    @Override
     public void onClick(DialogInterface dialog, int which) {
         dialog.dismiss();
+    }
+
+
+
+    private class AdapterReminders extends ArrayAdapter<String> {
+        public AdapterReminders(Context context, String[] adapterStrings) {
+            super(context, R.layout.lv_reminders, adapterStrings);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = LayoutInflater.from(getContext());
+            View customView = inflater.inflate(R.layout.lv_reminders, null);
+
+            TextView dateTV = (TextView) customView.findViewById(R.id.upcomingReminderDateTV);
+            TextView nameTV = (TextView) customView.findViewById(R.id.upcomingReminderItemTV);
+            TextView timeTV = (TextView) customView.findViewById(R.id.upcomingReminderTimeTV);
+
+            String[] info = getItem(position).split("\\|");
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(Long.parseLong(info[1]));
+
+            nameTV.setText(info[0]);
+            dateTV.setText(cal.get(Calendar.DAY_OF_MONTH) + " - " + cal.get(Calendar.MONTH)+1 + " - " + cal.get(Calendar.YEAR));
+            timeTV.setText(String.format("%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
+
+            return customView;
+        }
     }
 }

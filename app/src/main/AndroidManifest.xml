@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.SoftwareOverflow.CookingScheduler" >
 
+    <uses-permission android:name="com.android.vending.BILLING" />
+
     <uses-feature android:name="android.hardware.screen.portrait" />
 
     <application
@@ -31,6 +33,14 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".UpgradeScreen"
+            android:label="@string/title_activity_upgrade_screen" >
+        </activity>
+        <activity
+            android:name=".SavedMeals"
+            android:label="@string/title_activity_saved_meals" >
         </activity>
     </application>
 

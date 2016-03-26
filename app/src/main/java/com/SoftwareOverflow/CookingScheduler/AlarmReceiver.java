@@ -22,7 +22,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         Notification notification = new NotificationCompat.Builder(context)
                 .setAutoCancel(true)
-                .setContentTitle("Start cooking '" + name + "' now!")
+                .setContentTitle("REMINDER: '" + name + "' now!")
                 .setContentText(mainText)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setSmallIcon(R.drawable.launcher).build();
@@ -31,7 +31,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         notification.vibrate = new long[] {0};
         manager.notify((int) System.currentTimeMillis(), notification);
 
-        ShowTimes.cancelPendingIntent(name, id, context, true);
+        ShowTimes.cancelPendingIntent(name, id, context.getApplicationContext(), false);
     }
 
 

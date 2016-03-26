@@ -53,6 +53,7 @@
             android:background="@android:color/holo_red_dark" />
 
         <LinearLayout
+            android:weightSum="10"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
@@ -61,18 +62,22 @@
             >
 
             <TextView
-                style="@style/showTimingTVL"
+                android:layout_weight="3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
                 android:text="Start Cooking At:" />
 
             <View
                 android:layout_width="1dp"
                 android:layout_height="fill_parent"
-                android:background="@android:color/holo_green_dark" />
+                android:background="@android:color/holo_blue_light" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
+                android:layout_weight="7"
                 android:text="What to Cook:" />
         </LinearLayout>
 

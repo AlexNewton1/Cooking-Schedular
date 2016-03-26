@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- This acts as the child views for the expandable ListView -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/savedMealButtonBar"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:weightSum="3">
+
+    <Button
+        android:id="@+id/editSavedMeal"
+        style="@style/Base.Widget.AppCompat.ButtonBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_weight="1"
+        android:text="@string/edit_meal" />
+
+    <Button
+        android:id="@+id/loadSavedMeal"
+        style="@style/Base.Widget.AppCompat.ButtonBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_weight="1"
+        android:text="@string/load_meal" />
+
+    <Button
+        android:id="@+id/deleteSavedMeal"
+        style="@style/Base.Widget.AppCompat.ButtonBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_weight="1"
+        android:text="@string/delete_meal" />
+</LinearLayout>
