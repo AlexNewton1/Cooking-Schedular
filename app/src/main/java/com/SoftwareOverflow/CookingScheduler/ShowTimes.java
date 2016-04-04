@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,8 +46,6 @@ public class ShowTimes extends Activity {
         adView.loadAd(adRequest);
         */
 
-        //TODO -- FIX THIS MONUMENTAL BALLS UP!!!
-
 
         mealDatabase = new MealDatabase(this, null);
         //getting Intent extras
@@ -56,7 +53,7 @@ public class ShowTimes extends Activity {
         foodItemList = JsonHandler.getFoodItemList(this,extras.getString("jsonString"));
         readyTimeCal = (Calendar) extras.get("readyTimeCal");
 
-        Log.d("db", "foodItemList: " + foodItemList.size());
+
         //preparing String array for listView & reminders
         Map<Integer, String> map = new TreeMap<>(); //holds information in the form  EffectiveTimeForReminder --> foodItemName|stageName|stageTime
         for(FoodItem aFoodItem : foodItemList){
@@ -66,11 +63,9 @@ public class ShowTimes extends Activity {
                 String[] foodStageString= currentFoodItemStages.get(i).split("\\|");
                 effectiveTotalTime += Integer.parseInt(foodStageString[1]);
                 map.put(effectiveTotalTime, aFoodItem.name + "|" + foodStageString[0] + "|" + foodStageString[1]);
-                Log.d("db", "From Map: " + map.get(effectiveTotalTime));
             }
         }
         String[] stageInfo = map.values().toArray(new String[map.values().size()]);
-
 
         TextView readyTimeTV = (TextView) findViewById(R.id.readyTimeTV);
         readyTimeTV.setText(String.format("%02d:%02d", readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));
@@ -100,6 +95,7 @@ public class ShowTimes extends Activity {
         JsonHandler.putAlarmList(getApplicationContext(), alarmList);
     }
 
+    //TODO -- fix deletion of reminders after completion
     private static PendingIntent createPendingIntent(Context c, String name, int id){
         Intent alarmIntent = new Intent(c.getApplicationContext(), AlarmReceiver.class);
         alarmIntent.putExtra("name", name);

@@ -31,6 +31,7 @@ public class FoodItem implements Comparable<FoodItem> {
         numStages++;
     }
     public void removeStage(int stageNum){
+        totalTime -= Integer.parseInt(stagesList.get(stageNum).split("\\|")[1]);
         stagesList.remove(stageNum);
         numStages--;
     }

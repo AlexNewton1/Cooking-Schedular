@@ -118,7 +118,6 @@
             android:text="@string/add"
             android:layout_marginLeft="10dp"
             android:layout_marginStart="10dp"/>
-
     </LinearLayout>
 
 

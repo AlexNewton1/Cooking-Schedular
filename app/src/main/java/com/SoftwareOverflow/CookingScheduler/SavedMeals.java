@@ -20,9 +20,6 @@ import java.util.List;
 
 public class SavedMeals extends Activity {
 
-    //TODO -- show list view of saved meals in alphabetical order, add click listener to edit/delete/load meal
-    //TODO -- implement search bar
-
     private MealDatabase mealDB;
     private ExpandableListView mealsLV;
     private String searchString = "";
@@ -158,16 +155,9 @@ public class SavedMeals extends Activity {
             }
 
             Button loadButton = (Button) convertView.findViewById(R.id.loadSavedMeal);
-            Button editButton = (Button) convertView.findViewById(R.id.editSavedMeal);
             Button deleteButton = (Button) convertView.findViewById(R.id.deleteSavedMeal);
 
             loadButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    loadSavedMeal(groupPosition);
-                }
-            });
-            editButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     loadSavedMeal(groupPosition);
@@ -216,7 +206,6 @@ public class SavedMeals extends Activity {
                     .putExtra("jsonString", jsonString));
             finish();
         }
-
     }
 
 }

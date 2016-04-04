@@ -1,12 +1,12 @@
 package com.SoftwareOverflow.CookingScheduler;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
-public class UpgradeScreen extends AppCompatActivity {
+public class UpgradeScreen extends Activity {
 
     protected static boolean showAds = false;
     //TODO -- Add upgrade SKU & payload string

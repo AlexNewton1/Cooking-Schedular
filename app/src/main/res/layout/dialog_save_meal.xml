@@ -18,6 +18,7 @@
         android:background="@android:color/holo_blue_dark" />
 
     <EditText
+        android:textColorHint="@android:color/darker_gray"
         android:textColor="@android:color/black"
         android:layout_gravity="center_horizontal"
         android:id="@+id/mealNameET"
@@ -27,6 +28,7 @@
         android:textSize="15sp"/>
 
     <EditText
+        android:textColorHint="@android:color/darker_gray"
         android:textColor="@android:color/black"
         android:layout_gravity="center_horizontal"
         android:id="@+id/mealNotesET"

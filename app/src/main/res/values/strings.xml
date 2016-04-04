@@ -65,8 +65,7 @@
 
     <!--............................................SAVED MEALS PAGE.............................................................-->
     <string name="saved_meal_tile">Saved Meals</string>
-    <string name="edit_meal">Edit Meal</string>
-    <string name="load_meal">Load Meal</string>
+    <string name="load_meal">Load/Edit Meal</string>
     <string name="delete_meal">Delete Meal</string>
     <string name="no_meals_found">No Meals Found!</string>
 

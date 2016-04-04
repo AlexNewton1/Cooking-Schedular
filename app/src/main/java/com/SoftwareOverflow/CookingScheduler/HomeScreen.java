@@ -1,5 +1,6 @@
 package com.SoftwareOverflow.CookingScheduler;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -8,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,9 +26,12 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
-public class HomeScreen extends AppCompatActivity implements Dialog.OnClickListener {
+public class HomeScreen extends Activity implements Dialog.OnClickListener {
 
     //TODO - add in app billing for pro version (ad free & save meals)
+
+    private Toast mToast;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +41,8 @@ public class HomeScreen extends AppCompatActivity implements Dialog.OnClickListe
         //force portrait for phones
         if (getResources().getBoolean(R.bool.portrait_only))
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+
+        mToast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
     }
 
     public void createMeal(View v) {
@@ -53,14 +58,19 @@ public class HomeScreen extends AppCompatActivity implements Dialog.OnClickListe
             readyTimeCal.setTimeInMillis(readyTimeMillis);
             startActivity(new Intent(this, ShowTimes.class).putExtra("readyTimeCal", readyTimeCal).putExtra("jsonString", jsonString));
         }
-        else Toast.makeText(this, "No previous timings found.", Toast.LENGTH_SHORT).show();
+        else {
+            mToast.setText("No previous timings found.");
+            mToast.show();
+        }
     }
-
     public void loadMeal(View v){
         //TODO - check if upgraded before showing saved meals.....
         MealDatabase mealDB = new MealDatabase(HomeScreen.this, null);
         if(mealDB.getRowNum()!=0) startActivity(new Intent(HomeScreen.this, SavedMeals.class));
-        else Toast.makeText(HomeScreen.this, "No Saved Meals", Toast.LENGTH_SHORT).show();
+        else {
+            mToast.setText( "No Saved Meals");
+            mToast.show();
+        }
     }
 
     private void showUpcomingReminders() {
@@ -139,8 +149,9 @@ public class HomeScreen extends AppCompatActivity implements Dialog.OnClickListe
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onPause() {
+        mToast.cancel();
+        super.onPause();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

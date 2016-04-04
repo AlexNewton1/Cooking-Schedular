@@ -6,17 +6,7 @@
     android:id="@+id/savedMealButtonBar"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:weightSum="3">
-
-    <Button
-        android:id="@+id/editSavedMeal"
-        style="@style/Base.Widget.AppCompat.ButtonBar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_weight="1"
-        android:text="@string/edit_meal" />
+    android:weightSum="2">
 
     <Button
         android:id="@+id/loadSavedMeal"
@@ -37,4 +27,5 @@
         android:layout_marginRight="15dp"
         android:layout_weight="1"
         android:text="@string/delete_meal" />
+
 </LinearLayout>

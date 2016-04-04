@@ -1,5 +1,6 @@
 package com.SoftwareOverflow.CookingScheduler;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,19 +31,18 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
-public class ItemScreen extends AppCompatActivity implements View.OnClickListener {
+public class ItemScreen extends Activity implements View.OnClickListener {
 
     private static List<FoodItem> foodItemList = new ArrayList<>();
     private FoodItem tempFoodItem;
     private EditText stageName, stageTime, itemName;
-    private View addItemView, addStageView;
+    private Button finishAddingItemButton, addNewStageButton, finishAddingStageButton, cancelAddingItemButton, cancelAddingStageButton;
+    private View addItemView;
     private AlertDialog addItemDialog, addStageDialog, saveMealDialog; //dialogs declared in this scope to enable closing in overridden onClick method
     private Toast mToast; //single toast to prevent multiple toasts causing user to have to wait.
     private int updatingSavedMeal = -1; //holds the value of the SQLite row to update (-1 if not updating).
     private String mealName, mealNotes;
 
-
-    //TODO -- fix things here when loading a meal and then editing BEFORE adding anything...
 
 
     @Override
@@ -53,7 +52,28 @@ public class ItemScreen extends AppCompatActivity implements View.OnClickListene
         mToast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
 
         //force portrait for phones
-        if(getResources().getBoolean(R.bool.portrait_only)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+        if(getResources().getBoolean(R.bool.portrait_only)){
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+        }
+
+
+        //region------------------------ INITIALIZING DIALOGS & BUTTONS ---------------------------------------------------------------------
+        LayoutInflater inflater = LayoutInflater.from(this);
+        addItemView = inflater.inflate(R.layout.dialog_add_item, null);
+        addItemDialog = new AlertDialog.Builder(this).setView(addItemView).create();
+        View addStageView = inflater.inflate(R.layout.dialog_add_stage, null);
+        addStageDialog = new AlertDialog.Builder(this).setView(addStageView).create();
+
+        itemName = (EditText) addItemView.findViewById(R.id.newItemName);
+        stageName = (EditText) addStageView.findViewById(R.id.stageNameET);
+        stageTime = (EditText) addStageView.findViewById(R.id.stageTimeET);
+
+        addNewStageButton = (Button) addItemView.findViewById(R.id.addStageButton);
+        cancelAddingItemButton = (Button) addItemView.findViewById(R.id.cancelAddingItemButton);
+        finishAddingItemButton = (Button) addItemView.findViewById(R.id.addItemButton);
+        finishAddingStageButton = (Button) addStageView.findViewById(R.id.finishAddingStage);
+        cancelAddingStageButton = (Button) addStageView.findViewById(R.id.cancelAddStage);
+        //endregion initializing dialogs & buttons
 
         //getting intent extras (only used when loading a saved meal)
         Bundle extras = getIntent().getExtras();
@@ -68,16 +88,6 @@ public class ItemScreen extends AppCompatActivity implements View.OnClickListene
                 adapterStrings[i] = foodItemList.get(i).getInfo();
             showItemsLV(adapterStrings);
         }
-
-        LayoutInflater inflater = LayoutInflater.from(this);
-        addItemView = inflater.inflate(R.layout.dialog_add_item, null);
-        addItemDialog = new AlertDialog.Builder(this).setView(addItemView).create();
-        itemName = (EditText) addItemView.findViewById(R.id.newItemName);
-
-        addStageView = inflater.inflate(R.layout.dialog_add_stage, null);
-        addStageDialog = new AlertDialog.Builder(this).setView(addStageView).create();
-        stageName = (EditText) addStageView.findViewById(R.id.stageNameET);
-        stageTime = (EditText) addStageView.findViewById(R.id.stageTimeET);
 
         /*
         //load ad in thread
@@ -95,12 +105,12 @@ public class ItemScreen extends AppCompatActivity implements View.OnClickListene
 
     public void addItem(View view){
         tempFoodItem = new FoodItem("");
+        showStagesLV(tempFoodItem);
+        itemName.setText("");
         addItemDialog.show();
 
-        Button addItem = (Button) addItemView.findViewById(R.id.addItemButton);
-        Button addStage = (Button) addItemView.findViewById(R.id.addStageButton);
-        Button cancel = (Button) addItemView.findViewById(R.id.cancelAddingItemButton);
-        addItem.setOnClickListener(new View.OnClickListener() {
+
+        finishAddingItemButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (tempFoodItem.numStages == 0 || itemName.getText().toString().isEmpty()) {
@@ -122,19 +132,23 @@ public class ItemScreen extends AppCompatActivity implements View.OnClickListene
                 }
             }
         });
-        addStage.setOnClickListener(this);
-        cancel.setOnClickListener(this);
+        addNewStageButton.setOnClickListener(this);
+        cancelAddingItemButton.setOnClickListener(this);
     }
 
     public void addStage(){
-        Button addStage = (Button) addStageView.findViewById(R.id.finishAddingStage);
-        Button cancel = (Button) addStageView.findViewById(R.id.cancelAddStage);
-        addStage.setOnClickListener(this);
-        cancel.setOnClickListener(this);
+        finishAddingStageButton.setOnClickListener(this);
+        cancelAddingStageButton.setOnClickListener(this);
+
+        //set EditTexts to empty
+        stageName.setText("");
+        stageTime.setText("");
+
+        addStageDialog.show();
     }
 
     public void showStagesLV(final FoodItem foodItem){
-        ListView stagesLV = (ListView) addItemDialog.findViewById(R.id.stagesListView);
+        ListView stagesLV = (ListView) addItemView.findViewById(R.id.stagesListView);
 
         if(foodItem.getFoodStages() != null && foodItem.getFoodStages().size()!=0) {
             String[] foodStages = new String[foodItem.getFoodStages().size()];
@@ -159,8 +173,8 @@ public class ItemScreen extends AppCompatActivity implements View.OnClickListene
                 tempFoodItem = foodItem;
 
                 Button deleteButton = (Button) addStageDialog.findViewById(R.id.deleteStage);
-                Button addStageButton = (Button) addStageDialog.findViewById(R.id.finishAddingStage);
-                addStageButton.setOnClickListener(new View.OnClickListener() {
+                cancelAddingStageButton.setOnClickListener(ItemScreen.this);
+                finishAddingStageButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         String name = stageName.getText().toString();
@@ -212,27 +226,22 @@ public class ItemScreen extends AppCompatActivity implements View.OnClickListene
         itemsLV.setAdapter(adapter);
 
 
-
         itemsLV.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                LayoutInflater inflater = LayoutInflater.from(ItemScreen.this);
-                View v = inflater.inflate(R.layout.dialog_add_item, null);
-                addItemDialog = new AlertDialog.Builder(ItemScreen.this).setView(v).show();
+                addItemDialog.show();
 
                 final FoodItem foodItem = foodItemList.get(position);
                 itemName.setText(foodItem.name);
                 showStagesLV(foodItem);
 
-                Button addItem = (Button) addItemDialog.findViewById(R.id.addItemButton);
-                addItem.setOnClickListener(new View.OnClickListener() {
+                finishAddingItemButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (tempFoodItem.numStages == 0 || itemName.getText().toString().isEmpty()) {
                             mToast.setText("Please enter a name and add at least 1 stage");
                             mToast.show();
-                        }
-                        else {
+                        } else {
                             foodItem.setFoodStages(tempFoodItem.getFoodStages());
                             foodItem.name = itemName.getText().toString();
                             foodItem.totalTime = tempFoodItem.totalTime;
@@ -448,8 +457,7 @@ public class ItemScreen extends AppCompatActivity implements View.OnClickListene
                 else if(name.contains("|")){
                     mToast.setText("Name can't contain pipe character '|'");
                     mToast.show();
-                }
-                else {
+                } else {
                     tempFoodItem.addStage(name, time);
                     showStagesLV(tempFoodItem);
                     addStageDialog.dismiss();
