@@ -22,7 +22,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         Notification notification = new NotificationCompat.Builder(context)
                 .setAutoCancel(true)
-                .setContentTitle("REMINDER: '" + name + "' now!")
+                .setContentTitle("Cooking Scheduler: '" + name + "' now!")
                 .setContentText(mainText)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setSmallIcon(R.drawable.launcher).build();

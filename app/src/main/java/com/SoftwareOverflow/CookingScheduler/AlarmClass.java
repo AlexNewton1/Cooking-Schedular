@@ -1,5 +1,7 @@
 package com.SoftwareOverflow.CookingScheduler;
 
+import android.support.annotation.NonNull;
+
 /**
  * Stores info about the upcoming notifications
  */
@@ -19,13 +21,11 @@ public class AlarmClass implements Comparable{
     }
 
     public String getInfo(){
-        StringBuilder sb = new StringBuilder();
-        sb.append(name).append("|").append(alarmTime).append("|");
-        return sb.toString();
+        return name + "|" + alarmTime;
     }
 
     @Override
-    public int compareTo(Object another) {
+    public int compareTo(@NonNull Object another) {
         AlarmClass other = (AlarmClass) another;
 
         if(this.alarmTime > other.alarmTime) return 1;

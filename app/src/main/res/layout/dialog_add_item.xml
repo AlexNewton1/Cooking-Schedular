@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:layout_margin="20dp">
-
 
     <EditText
         android:textSize="30sp"
@@ -41,7 +40,24 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:weightSum="10">
+        android:weightSum="100">
+
+        <TextView
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="@string/lv_stage_no"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_width="0dp"
+            android:layout_weight="25"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="fill_parent"
+            android:background="@android:color/holo_blue_light"/>
 
         <TextView
             android:gravity="center"
@@ -52,7 +68,7 @@
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_width="0dp"
-            android:layout_weight="7"
+            android:layout_weight="55"
             android:layout_height="wrap_content" />
 
         <View
@@ -66,7 +82,7 @@
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_width="0dp"
-            android:layout_weight="3"
+            android:layout_weight="20"
             android:layout_height="wrap_content" />
 
     </LinearLayout>
@@ -79,18 +95,22 @@
 
     <ListView
         android:id="@+id/stagesListView"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_gravity="center_horizontal">
-    </ListView>
+        android:layout_gravity="center_horizontal"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:isScrollContainer="true"
+        />
 
 
     <LinearLayout
-
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
+        android:layout_gravity="center_horizontal"
+        android:baselineAligned="true">
 
         <Button
             style="@style/Widget.AppCompat.ButtonBar"

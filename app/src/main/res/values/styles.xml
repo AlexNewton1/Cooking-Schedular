@@ -4,6 +4,9 @@
     <style name="homeScreenTheme" parent="Theme.AppCompat.Light"></style>
 
 
+    <style name="MyTextViewStyle" parent="android:Widget.TextView">
+        <item name="android:textColor">@android:color/black</item>
+    </style>
 
     <style name="title">
         <item name="android:layout_gravity">center_horizontal</item>

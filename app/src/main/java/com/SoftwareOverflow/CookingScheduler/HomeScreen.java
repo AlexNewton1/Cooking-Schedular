@@ -1,5 +1,6 @@
 package com.SoftwareOverflow.CookingScheduler;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -8,7 +9,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.graphics.Point;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,18 +34,24 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
     //TODO - add in app billing for pro version (ad free & save meals)
 
     private Toast mToast;
-
+    public static int screenHeight;
 
     @Override
+    @SuppressLint("ShowToast")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_screen);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        screenHeight = size.y;
 
         //force portrait for phones
         if (getResources().getBoolean(R.bool.portrait_only))
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
 
-        mToast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
+        mToast = Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT);
     }
 
     public void createMeal(View v) {
@@ -74,7 +83,7 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
     }
 
     private void showUpcomingReminders() {
-        final List<AlarmClass> alarmList = JsonHandler.getAlarmList(getApplicationContext());
+        final List<AlarmClass> alarmList = JsonHandler.getAlarmList(this);
         Collections.sort(alarmList);
 
         if (alarmList.size() > 0) {
@@ -94,7 +103,8 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                 @Override
                 public void onClick(View v) {
                     new AlertDialog.Builder(HomeScreen.this)
-                            .setTitle("Delete All Reminders?\nThis Can't Be Undone").setNegativeButton("Cancel", HomeScreen.this)
+                            .setTitle("Delete All Reminders?\nThis Can't Be Undone")
+                            .setNegativeButton("Cancel", HomeScreen.this)
                             .setPositiveButton("Delete All Reminders", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -193,7 +203,6 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
             LayoutInflater inflater = LayoutInflater.from(getContext());
             View customView = inflater.inflate(R.layout.lv_reminders, null);
 
-            TextView dateTV = (TextView) customView.findViewById(R.id.upcomingReminderDateTV);
             TextView nameTV = (TextView) customView.findViewById(R.id.upcomingReminderItemTV);
             TextView timeTV = (TextView) customView.findViewById(R.id.upcomingReminderTimeTV);
 
@@ -202,8 +211,8 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
             cal.setTimeInMillis(Long.parseLong(info[1]));
 
             nameTV.setText(info[0]);
-            dateTV.setText(cal.get(Calendar.DAY_OF_MONTH) + " - " + cal.get(Calendar.MONTH)+1 + " - " + cal.get(Calendar.YEAR));
-            timeTV.setText(String.format("%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
+            timeTV.setText(String.format("%02d-%02d-%04d at %02d:%02d", cal.get(Calendar.DAY_OF_MONTH),
+                    cal.get(Calendar.MONTH), cal.get(Calendar.YEAR), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
 
             return customView;
         }

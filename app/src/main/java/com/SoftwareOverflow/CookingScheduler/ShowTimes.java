@@ -59,10 +59,10 @@ public class ShowTimes extends Activity {
         for(FoodItem aFoodItem : foodItemList){
             List<String> currentFoodItemStages = aFoodItem.getFoodStages();
             int effectiveTotalTime = 0;
-            for(int i=0; i<currentFoodItemStages.size(); i++){
+            for(int i=currentFoodItemStages.size()-1; i>=0;  i--){
                 String[] foodStageString= currentFoodItemStages.get(i).split("\\|");
                 effectiveTotalTime += Integer.parseInt(foodStageString[1]);
-                map.put(effectiveTotalTime, aFoodItem.name + "|" + foodStageString[0] + "|" + foodStageString[1]);
+                map.put(effectiveTotalTime, aFoodItem.name + "|" + foodStageString[0] + "|" + foodStageString[1] + "|" + effectiveTotalTime);
             }
         }
         String[] stageInfo = map.values().toArray(new String[map.values().size()]);
@@ -74,12 +74,12 @@ public class ShowTimes extends Activity {
         }
 
     private void setReminders(Calendar readyTimeCal, String[] itemList) {
-        List<AlarmClass> alarmList = JsonHandler.getAlarmList(getApplicationContext());
+        List<AlarmClass> alarmList = JsonHandler.getAlarmList(this);
         AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
         for(String infoString : itemList) {
             String[] info = infoString.split("\\|");
             String name = info[0] + " - " + info[1];
-            int time = Integer.parseInt(info[2]);
+            int time = Integer.parseInt(info[3]);
 
             Calendar alarmCal = Calendar.getInstance();
             alarmCal.setTimeInMillis(readyTimeCal.getTimeInMillis());
@@ -88,19 +88,18 @@ public class ShowTimes extends Activity {
             AlarmClass alarm = new AlarmClass(time, alarmCal.getTimeInMillis(), name, (int) System.currentTimeMillis());
             alarmList.add(alarm);
 
-            PendingIntent pi = createPendingIntent(getApplicationContext(), alarm.name, alarm.id);
+            PendingIntent pi = createPendingIntent(getApplicationContext(), alarm);
             am.set(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(), pi);
         }
         Toast.makeText(this, "Reminders Set", Toast.LENGTH_SHORT).show();
         JsonHandler.putAlarmList(getApplicationContext(), alarmList);
     }
 
-    //TODO -- fix deletion of reminders after completion
-    private static PendingIntent createPendingIntent(Context c, String name, int id){
+    private static PendingIntent createPendingIntent(Context c, AlarmClass alarm){
         Intent alarmIntent = new Intent(c.getApplicationContext(), AlarmReceiver.class);
-        alarmIntent.putExtra("name", name);
-        alarmIntent.putExtra("id", id);
-        return PendingIntent.getBroadcast(c.getApplicationContext(), id, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
+        alarmIntent.putExtra("name", alarm.name);
+        alarmIntent.putExtra("id", alarm.id);
+        return PendingIntent.getBroadcast(c.getApplicationContext(), alarm.id, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
     }
 
     public static void cancelPendingIntent(String name,final int id, final Context context, boolean showToast){
@@ -110,7 +109,7 @@ public class ShowTimes extends Activity {
         for(int i=0; i<alarmList.size(); i++) {
             int intentID = alarmList.get(i).id;
             if (intentID == id) {
-                createPendingIntent(context.getApplicationContext(), name, id).cancel();
+                createPendingIntent(context.getApplicationContext(), alarmList.get(i)).cancel();
                 alarmList.remove(i);
                 success = true;
                 break;
@@ -185,7 +184,6 @@ public class ShowTimes extends Activity {
 
 
 
-
     private class AdapterShowTimes extends ArrayAdapter<String> {
         int length;
 
@@ -200,14 +198,14 @@ public class ShowTimes extends Activity {
             View customView = inflater.inflate(R.layout.lv_show_times, null);
 
             String[] info = getItem(length-position-1).split("\\|");
-            int cookingTime = Integer.parseInt(info[2]);
+            int effectiveTotalTime = Integer.parseInt(info[3]);
 
             TextView startTime = (TextView) customView.findViewById(R.id.startTimeTV);
             TextView startItem = (TextView) customView.findViewById(R.id.startItemTV);
 
             Calendar readyTimeCal = Calendar.getInstance();
             readyTimeCal.setTime(ShowTimes.getReadyTimeCal().getTime());
-            readyTimeCal.add(Calendar.MINUTE, -cookingTime );
+            readyTimeCal.add(Calendar.MINUTE, -effectiveTotalTime);
 
             startItem.setText(info[0] + " - " + info[1] + "\n(" + info[2] + " mins)");
             startTime.setText(String.format("%02d:%02d", readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));

@@ -50,7 +50,7 @@
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
-            android:background="@android:color/holo_red_dark" />
+            android:background="@android:color/holo_blue_dark" />
 
         <LinearLayout
             android:weightSum="10"
@@ -71,7 +71,7 @@
             <View
                 android:layout_width="1dp"
                 android:layout_height="fill_parent"
-                android:background="@android:color/holo_blue_light" />
+                android:background="@android:color/holo_green_dark" />
 
             <TextView
                 android:gravity="center"

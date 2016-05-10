@@ -1,23 +1,31 @@
 package com.SoftwareOverflow.CookingScheduler;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.DragEvent;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RadioButton;
@@ -30,54 +38,66 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class ItemScreen extends Activity implements View.OnClickListener {
 
+    //TODO - sort parentViewGroup to avoid passing null when inflating layouts
+    private ViewGroup parentViewGroup = null;
+    private View addItemView;
+    private AlertDialog addItemDialog, addStageDialog, saveMealDialog;
+    //dialogs declared in this scope to enable closing in overridden onClick method
+    private Toast mToast; //single toast to prevent multiple toasts causing user to have to wait.
+
     private static List<FoodItem> foodItemList = new ArrayList<>();
     private FoodItem tempFoodItem;
+
     private EditText stageName, stageTime, itemName;
-    private Button finishAddingItemButton, addNewStageButton, finishAddingStageButton, cancelAddingItemButton, cancelAddingStageButton;
-    private View addItemView;
-    private AlertDialog addItemDialog, addStageDialog, saveMealDialog; //dialogs declared in this scope to enable closing in overridden onClick method
-    private Toast mToast; //single toast to prevent multiple toasts causing user to have to wait.
-    private int updatingSavedMeal = -1; //holds the value of the SQLite row to update (-1 if not updating).
+    private Button finishAddingItemButton, finishAddingStageButton,
+            cancelAddingItemButton, cancelAddingStageButton;
+    private ListView stagesLV;
+
+    private int updatingSavedMeal = -1; //value of the SQLite row to update (-1 if not updating).
     private String mealName, mealNotes;
 
 
-
+    @SuppressLint("ShowToast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_screen);
+
+
         mToast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
 
         //force portrait for phones
-        if(getResources().getBoolean(R.bool.portrait_only)){
+        if (getResources().getBoolean(R.bool.portrait_only)) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
         }
 
 
         //region------------------------ INITIALIZING DIALOGS & BUTTONS ---------------------------------------------------------------------
         LayoutInflater inflater = LayoutInflater.from(this);
-        addItemView = inflater.inflate(R.layout.dialog_add_item, null);
+        addItemView = inflater.inflate(R.layout.dialog_add_item, parentViewGroup);
         addItemDialog = new AlertDialog.Builder(this).setView(addItemView).create();
-        View addStageView = inflater.inflate(R.layout.dialog_add_stage, null);
+        View addStageView = inflater.inflate(R.layout.dialog_add_stage, (ViewGroup) addItemView.getParent());
         addStageDialog = new AlertDialog.Builder(this).setView(addStageView).create();
 
         itemName = (EditText) addItemView.findViewById(R.id.newItemName);
         stageName = (EditText) addStageView.findViewById(R.id.stageNameET);
         stageTime = (EditText) addStageView.findViewById(R.id.stageTimeET);
 
-        addNewStageButton = (Button) addItemView.findViewById(R.id.addStageButton);
+        Button addNewStageButton = (Button) addItemView.findViewById(R.id.addStageButton);
+        addNewStageButton.setOnClickListener(this);
         cancelAddingItemButton = (Button) addItemView.findViewById(R.id.cancelAddingItemButton);
         finishAddingItemButton = (Button) addItemView.findViewById(R.id.addItemButton);
         finishAddingStageButton = (Button) addStageView.findViewById(R.id.finishAddingStage);
         cancelAddingStageButton = (Button) addStageView.findViewById(R.id.cancelAddStage);
         //endregion initializing dialogs & buttons
 
-        //getting intent extras (only used when loading a saved meal)
+        //getting intent extras (only when loading saved meals)
         Bundle extras = getIntent().getExtras();
-        if(extras != null) {
+        if (extras != null) {
             updatingSavedMeal = extras.getInt("updatingMeal", -1); //value of SQLite row ID of meal to be updated (-1 if creating new meal)
             mealName = extras.getString("mealName", "");
             mealNotes = extras.getString("mealNotes", "");
@@ -91,11 +111,13 @@ public class ItemScreen extends Activity implements View.OnClickListener {
 
         /*
         //load ad in thread
+        //TODO - check if free / upgraded
         new Thread(new Runnable() {
             @Override
             public void run() {
                 final AdView adView = (AdView)findViewById(R.id.itemScreenBannerAd);
-                AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR) //adding emulator and phone as test devices
+                //adding emulator and phone as test devices
+                AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                         .addTestDevice("2A0E7D2865A3C592033F3707402D0BBB").build();
                 adView.loadAd(adRequest);
             }
@@ -103,12 +125,11 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         */
     }
 
-    public void addItem(View view){
+    public void addItem(View view) {
         tempFoodItem = new FoodItem("");
         showStagesLV(tempFoodItem);
         itemName.setText("");
         addItemDialog.show();
-
 
         finishAddingItemButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,8 +137,7 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                 if (tempFoodItem.numStages == 0 || itemName.getText().toString().isEmpty()) {
                     mToast.setText("Please enter a name and add at least 1 stage");
                     mToast.show();
-                }
-                else {
+                } else {
                     FoodItem foodItem = new FoodItem(itemName.getText().toString());
                     foodItem.setFoodStages(tempFoodItem.getFoodStages());
                     foodItem.totalTime = tempFoodItem.totalTime;
@@ -132,11 +152,10 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                 }
             }
         });
-        addNewStageButton.setOnClickListener(this);
         cancelAddingItemButton.setOnClickListener(this);
     }
 
-    public void addStage(){
+    private void addStage() {
         finishAddingStageButton.setOnClickListener(this);
         cancelAddingStageButton.setOnClickListener(this);
 
@@ -147,18 +166,16 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         addStageDialog.show();
     }
 
-    public void showStagesLV(final FoodItem foodItem){
-        ListView stagesLV = (ListView) addItemView.findViewById(R.id.stagesListView);
+    private void showStagesLV(final FoodItem foodItem) {
+        List<String> foodStagesList = foodItem.getFoodStages();
 
-        if(foodItem.getFoodStages() != null && foodItem.getFoodStages().size()!=0) {
-            String[] foodStages = new String[foodItem.getFoodStages().size()];
-            for(int i=0; i<foodStages.length; i++){
-                foodStages[i] = foodItem.getFoodStages().get(i);
-            }
-            ListAdapter adapter = new AdapterItemStages(this, foodStages);
+        stagesLV = (ListView) addItemView.findViewById(R.id.stagesListView);
+        stagesLV.getLayoutParams().height = HomeScreen.screenHeight;
+
+        if (foodStagesList != null && foodStagesList.size() != 0) {
+            ListAdapter adapter = new AdapterItemStages(new ArrayList<>(foodStagesList));
             stagesLV.setAdapter(adapter);
-        }
-        else stagesLV.setAdapter(null);
+        } else stagesLV.setAdapter(null);
 
         stagesLV.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -197,7 +214,8 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                     @Override
                     public void onClick(View v) {
                         new AlertDialog.Builder(ItemScreen.this)
-                                .setTitle("Delete Stage '" + stages[position].split("\\|")[0] + "'?\nThis Cannot be Undone")
+                                .setTitle("Delete Stage '" + stages[position].split("\\|")[0]
+                                        + "'?\nThis Cannot be Undone")
                                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
@@ -218,13 +236,13 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                 return true;
             }
         });
+
     }
 
-    public void showItemsLV(String[] adapterStrings){
+    private void showItemsLV(String[] adapterStrings) {
         ListAdapter adapter = new AdapterNewItem(this, adapterStrings);
         ListView itemsLV = (ListView) findViewById(R.id.mealItemListView);
         itemsLV.setAdapter(adapter);
-
 
         itemsLV.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -232,6 +250,7 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                 addItemDialog.show();
 
                 final FoodItem foodItem = foodItemList.get(position);
+                tempFoodItem = foodItem;
                 itemName.setText(foodItem.name);
                 showStagesLV(foodItem);
 
@@ -255,9 +274,8 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                         }
                     }
                 });
-
                 Button delete = (Button) addItemDialog.findViewById(R.id.cancelAddingItemButton);
-                delete.setText("Delete Item");
+                delete.setText(R.string.delete);
                 delete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -290,13 +308,12 @@ public class ItemScreen extends Activity implements View.OnClickListener {
     }
 
     @SuppressWarnings("deprecation")
-    public void selectReadyTime(View v){
-        if(foodItemList.isEmpty()){
+    public void selectReadyTime(View v) {
+        if (foodItemList.isEmpty()) {
             mToast.setText("Please add at least 1 item first");
             mToast.show();
-        }
-        else {
-            View dialogView = View.inflate(this, R.layout.dialog_ready_time, null);
+        } else {
+            View dialogView = View.inflate(this, R.layout.dialog_ready_time, parentViewGroup);
             final AlertDialog alertDialog = new AlertDialog.Builder(this).setView(dialogView).show();
 
             final CheckBox reminderCheckBox = (CheckBox) dialogView.findViewById(R.id.notificationSwitch);
@@ -329,15 +346,14 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                             timePicker.setHour(cal.get(Calendar.HOUR_OF_DAY));
                             timePicker.setMinute(cal.get(Calendar.MINUTE));
                         } else {
-                            //USING DEPRECATED METHODS FOR API < 23
-                            //(setCurrentHour() & setCurrentMinute() deprecated in API 23)
+                            //USING DEPRECATED METHODS FOR API < 23 - setCurrentHour() & setCurrentMinute() deprecated
                             timePicker.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
                             timePicker.setCurrentMinute(cal.get(Calendar.MINUTE));
                         }
                         timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
                             @Override
                             public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-                                readyTimeTV.setText(String.format(" %02d:%02d",hourOfDay, minute));
+                                readyTimeTV.setText(String.format(" %02d:%02d", hourOfDay, minute));
                             }
                         });
 
@@ -350,10 +366,9 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                 public void onClick(View v) {
                     Calendar earliestTime = earliestReadyTime();
                     Calendar chosenTime = Calendar.getInstance();
-                    if(earliestSelect.isChecked()){
+                    if (earliestSelect.isChecked()) {
                         chosenTime.setTimeInMillis(earliestReadyTime().getTimeInMillis());
-                    }
-                    else {
+                    } else {
                         if (Build.VERSION.SDK_INT >= 23) {
                             chosenTime.set(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth(),
                                     timePicker.getHour(), timePicker.getMinute());
@@ -384,22 +399,21 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         }
     }
 
-    public static Calendar earliestReadyTime(){
+    public static Calendar earliestReadyTime() {
         Collections.sort(foodItemList);
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MINUTE, foodItemList.get(0).totalTime);
         return cal;
     }
 
-    public void saveMeal(View v){
+    public void saveMeal(View v) {
         //TODO -- check if free/upgraded
-        if(foodItemList.isEmpty()) {
+        if (foodItemList.isEmpty()) {
             mToast.setText("Please add at least 1 item first");
             mToast.show();
-        }
-        else{
+        } else {
             LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-            View dialogView = inflater.inflate(R.layout.dialog_save_meal, null);
+            View dialogView = inflater.inflate(R.layout.dialog_save_meal, parentViewGroup);
             saveMealDialog = new AlertDialog.Builder(this).setView(dialogView).show();
 
             final EditText nameET = (EditText) dialogView.findViewById(R.id.mealNameET);
@@ -415,15 +429,14 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                     String name = nameET.getText().toString();
                     String notes = notesET.getText().toString();
 
-                    if(notes.isEmpty()) notes = "No Notes Saved";
-                    if(name.isEmpty()) {
+                    if (notes.isEmpty()) notes = "No Notes Saved";
+                    if (name.isEmpty()) {
                         mToast.setText("Please enter a meal name first");
                         mToast.show();
-                    }
-                    else{
+                    } else {
                         MealDatabase mealDB = new MealDatabase(ItemScreen.this, null);
                         String jsonString = JsonHandler.getFoodItemJsonString(ItemScreen.this, foodItemList);
-                        if(mealDB.addMeal(name, jsonString, notes, updatingSavedMeal)){
+                        if (mealDB.addMeal(name, jsonString, notes, updatingSavedMeal)) {
                             saveMealDialog.dismiss();
                         }
                     }
@@ -440,7 +453,7 @@ public class ItemScreen extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        switch(v.getId()){
+        switch (v.getId()) {
             case R.id.cancelAddingItemButton:
                 addItemDialog.dismiss();
                 break;
@@ -450,11 +463,10 @@ public class ItemScreen extends Activity implements View.OnClickListener {
             case R.id.finishAddingStage:
                 String name = stageName.getText().toString();
                 String time = stageTime.getText().toString();
-                if(name.isEmpty() || time.isEmpty()){
+                if (name.isEmpty() || time.isEmpty()) {
                     mToast.setText("Please enter a name and a time");
                     mToast.show();
-                }
-                else if(name.contains("|")){
+                } else if (name.contains("|")) {
                     mToast.setText("Name can't contain pipe character '|'");
                     mToast.show();
                 } else {
@@ -484,8 +496,6 @@ public class ItemScreen extends Activity implements View.OnClickListener {
     }
 
 
-
-
     private class AdapterNewItem extends ArrayAdapter<String> {
 
         public AdapterNewItem(Context context, String[] items) {
@@ -495,8 +505,8 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             LayoutInflater inflater = LayoutInflater.from(getContext());
-            if(convertView == null) {
-                convertView = inflater.inflate(R.layout.lv_food_item, null);
+            if (convertView == null) {
+                convertView = inflater.inflate(R.layout.lv_food_item, parentViewGroup);
             }
 
             String[] info = getItem(position).split("\\|");
@@ -505,38 +515,167 @@ public class ItemScreen extends Activity implements View.OnClickListener {
             TextView time = (TextView) convertView.findViewById(R.id.itemTimeTV);
             name.setText(info[0]);
             stages.setText(info[2]);
-            time.setText(info[1]  + " mins");
+            time.setText(String.format("%s mins", info[1]));
 
             return convertView;
         }
     }
 
 
-    private class AdapterItemStages extends ArrayAdapter<String> {
 
-        public AdapterItemStages(Context context, String[] items) {
-            super(context, R.layout.lv_item_stage, items);
+    private class AdapterItemStages extends BaseAdapter {
+
+        private int startPos, currentPos;
+        private ArrayList<String> data, tempData;
+        private long lastTouchTime = 0;
+        private final long MAX_TOUCH_DELAY = 1000;
+
+
+        public AdapterItemStages(ArrayList<String> items) {
+            data = items;
+            tempData = new ArrayList<>(data);
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, final ViewGroup parent) {
+            ViewHolder holder;
 
-            LayoutInflater inflater = LayoutInflater.from(getContext());
+            LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
             if (convertView == null) {
-                convertView = inflater.inflate(R.layout.lv_item_stage, null);
+                convertView = inflater.inflate(R.layout.lv_item_stage, parent, false);
+
+                holder = new ViewHolder();
+                holder.stageName = (TextView) convertView.findViewById(R.id.stageName);
+                holder.stageTime = (TextView) convertView.findViewById(R.id.stageTime);
+                holder.stageNumber = (TextView) convertView.findViewById(R.id.stageNumberTV);
+
+                convertView.setTag(holder);
+            }
+            else{
+                holder = (ViewHolder) convertView.getTag();
             }
 
-            TextView stageName = (TextView) convertView.findViewById(R.id.stageName);
-            TextView stageTime = (TextView) convertView.findViewById(R.id.stageTime);
+            String s = (String) getItem(position);
+            String[] info = s.split("\\|");
+            holder.stageName.setText(info[0]);
+            holder.stageTime.setText(info[1]);
+            holder.stageNumber.setText(String.format(Locale.getDefault(), "%1d", position + 1));
 
-            String[] info = getItem(position).split("\\|");
 
-            if (info.length>1) {
-                stageName.setText(info[0]);
-                stageTime.setText(info[1]);
-            }
+            convertView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                        //only initiate drag on double click
+                        long thisTouchTime = System.currentTimeMillis();
+                        boolean isDoubleClick = thisTouchTime < lastTouchTime + MAX_TOUCH_DELAY;
+                        if(!isDoubleClick){
+                            lastTouchTime = thisTouchTime;
+                            return false;
+                        }
+                        else { //start drag
+                            startPos = position;
+                            currentPos = position;
 
+                            ClipData clipData = ClipData.newPlainText("", "");
+                            View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(view);
+                            view.startDrag(clipData, shadowBuilder, view, 0);
+                            view.setVisibility(View.GONE);
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            });
+
+            convertView.setOnDragListener(new View.OnDragListener() {
+                @Override
+                public boolean onDrag(final View v, DragEvent event) {
+                    switch (event.getAction()) {
+                        case DragEvent.ACTION_DRAG_ENTERED:
+
+                            if(position > startPos){
+                                //view dragged downwards
+                                ((LinearLayout) v).setGravity(Gravity.TOP);
+                            }
+                            else{
+                                //view dragged upwards
+                                ((LinearLayout ) v).setGravity(Gravity.BOTTOM);
+                            }
+
+                            moveData(currentPos, position);
+                            currentPos = position;
+                            v.getLayoutParams().height = v.getHeight()*2;
+
+                            break;
+                        case DragEvent.ACTION_DRAG_EXITED:
+                            //go straight into ACTION_DROP case (resize view to original size)
+                        case DragEvent.ACTION_DROP:
+                            v.setLayoutParams(new AbsListView.LayoutParams(v.getWidth(), v.getHeight()/2));
+                            break;
+                        case DragEvent.ACTION_DRAG_ENDED:
+                            //update list view if drop valid (inside list view)
+                            if (event.getResult()){
+                                updateListView();
+                            }
+                            else{ //drop invalid - reset tempData back to original data
+                                tempData = new ArrayList<>(data);
+                            }
+
+                            final View droppedView = (View) event.getLocalState();
+                            droppedView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    droppedView.setVisibility(View.VISIBLE);
+                                }
+                            });
+                            break;
+                        default:
+                            break;
+                    }
+                    return true;
+                }
+            });
             return convertView;
         }
+
+        private void moveData(int from, int to){
+            String temp = tempData.get(from);
+            tempData.remove(from);
+            tempData.add(to, temp);
+        }
+
+        private void updateListView(){
+            data.clear();
+            data.addAll(tempData);
+
+            tempFoodItem.setFoodStages(data);
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public int getCount() {
+            return data.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return data.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return 0;
+        }
+
     }
+
+    /**
+     * Class to hold views used in custom list view to increase scrolling smoothness and aid view recycling
+     */
+    static class ViewHolder{
+        TextView stageName, stageTime, stageNumber;
+    }
+
 }

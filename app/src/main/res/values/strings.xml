@@ -34,9 +34,11 @@
     <string name="delete">Delete</string>
     <string name="add_stage">Add Stage</string>
     <string name="stages">Stages</string>
-    <string name="drag_to_reorder">Drag To Reorder</string>
+    <string name="drag_to_reorder">Double Tap To Reorder\nLong Hold To Edit Stages</string>
     <string name="lv_stage_name">Stage Name</string>
+    <string name="lv_stage_no">Number</string>
     <string name="cont">Continue</string>
+    <string name="reorder_handler">image to handle drag events to reorder list view items</string>
 
 
     <!-- .................................CHOOSE READY TIME DIALOG STRINGS.................................................-->
