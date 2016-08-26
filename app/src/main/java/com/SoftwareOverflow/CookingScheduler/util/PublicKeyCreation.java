@@ -1,8 +1,13 @@
 package com.SoftwareOverflow.CookingScheduler.util;
 
 /**
- * Created by Alex on 26/08/2016.
+ * This class will be used to obfuscate the Base64-encoded RSA public key
  */
 public class PublicKeyCreation {
+    String startKey = "";
+
+    public PublicKeyCreation(){
+        //Do some manipulations on the start key and create the Base64-encoded public key
+    }
 
 }
