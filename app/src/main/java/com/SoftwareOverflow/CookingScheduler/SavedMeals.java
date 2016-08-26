@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class SavedMeals extends Activity {
 
@@ -122,7 +123,8 @@ public class SavedMeals extends Activity {
         @Override
         public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
             if(convertView == null){
-                LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(LAYOUT_INFLATER_SERVICE);
+                LayoutInflater layoutInflater =
+                        (LayoutInflater) this.context.getSystemService(LAYOUT_INFLATER_SERVICE);
                 convertView = layoutInflater.inflate(R.layout.lv_saved_meals, null);
             }
 
@@ -141,8 +143,10 @@ public class SavedMeals extends Activity {
 
             titleTV.setText(headerInfo[0]);
             notesTV.setText(headerInfo[2]);
-            numStagesTV.setText(foodItemList.size() + " items - " + numStages + " stages");
-            totalTimeTV.setText(Integer.toString(foodItemList.get(0).totalTime));
+            numStagesTV.setText(String.format(Locale.getDefault(),
+                    "%d items - %d stages", foodItemList.size(), numStages));
+            totalTimeTV.setText(String.format(Locale.getDefault(),
+                    "%d", foodItemList.get(0).totalTime));
 
             return convertView;
         }

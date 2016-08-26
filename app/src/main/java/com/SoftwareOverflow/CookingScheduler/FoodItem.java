@@ -1,5 +1,7 @@
 package com.SoftwareOverflow.CookingScheduler;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +56,7 @@ public class FoodItem implements Comparable<FoodItem> {
 
     @Override
     //returns a sorted list in descending time order when collections.sort(List) is called)
-    public int compareTo(FoodItem other) {
+    public int compareTo(@NonNull FoodItem other) {
         if (this.totalTime < other.totalTime) return 1;
         else return -1;
     }

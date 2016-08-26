@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +20,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -30,6 +37,7 @@ public class ShowTimes extends Activity {
     private static Calendar readyTimeCal;
     private List<FoodItem> foodItemList = new ArrayList<>();
     private MealDatabase mealDatabase;
+    private InterstitialAd interstitialAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +45,6 @@ public class ShowTimes extends Activity {
         setContentView(R.layout.activity_show_times);
         //force portrait mode for phones
         if (getResources().getBoolean(R.bool.portrait_only)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-
-        /*
-        //set up adView
-        AdView adView = (AdView) findViewById(R.id.showTimesScreenBannerAd);
-        AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR) //adding emulator and phone as test devices
-                .addTestDevice("2A0E7D2865A3C592033F3707402D0BBB").build();
-        adView.loadAd(adRequest);
-        */
 
 
         mealDatabase = new MealDatabase(this, null);
@@ -68,13 +68,29 @@ public class ShowTimes extends Activity {
         String[] stageInfo = map.values().toArray(new String[map.values().size()]);
 
         TextView readyTimeTV = (TextView) findViewById(R.id.readyTimeTV);
-        readyTimeTV.setText(String.format("%02d:%02d", readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));
+        readyTimeTV.setText(String.format(Locale.getDefault(), "%02d:%02d", readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));
         if(extras.getBoolean("reminders")) setReminders(readyTimeCal, stageInfo);
         showListView(stageInfo);
+
+        //start loading ad 1 second after screen loaded
+        //TODO - check if free/upgraded
+        final AdView adView = (AdView) findViewById(R.id.showTimesScreenBannerAd);
+        Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                AdRequest adRequest = new AdRequest.Builder().build();
+                adView.loadAd(adRequest);
+                interstitialAd = new InterstitialAd(ShowTimes.this);
+                interstitialAd.setAdUnitId(getResources().
+                        getString(R.string.interstitial_ad_unit_id));
+                interstitialAd.loadAd(adRequest);
+            }
+        });
         }
 
     private void setReminders(Calendar readyTimeCal, String[] itemList) {
-        List<AlarmClass> alarmList = JsonHandler.getAlarmList(this);
+        List<NotificationClass> alarmList = JsonHandler.getAlarmList(this);
         AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
         for(String infoString : itemList) {
             String[] info = infoString.split("\\|");
@@ -85,7 +101,7 @@ public class ShowTimes extends Activity {
             alarmCal.setTimeInMillis(readyTimeCal.getTimeInMillis());
             alarmCal.add(Calendar.MINUTE, -time);
 
-            AlarmClass alarm = new AlarmClass(time, alarmCal.getTimeInMillis(), name, (int) System.currentTimeMillis());
+            NotificationClass alarm = new NotificationClass(time, alarmCal.getTimeInMillis(), name, (int) System.currentTimeMillis());
             alarmList.add(alarm);
 
             PendingIntent pi = createPendingIntent(getApplicationContext(), alarm);
@@ -95,15 +111,15 @@ public class ShowTimes extends Activity {
         JsonHandler.putAlarmList(getApplicationContext(), alarmList);
     }
 
-    private static PendingIntent createPendingIntent(Context c, AlarmClass alarm){
-        Intent alarmIntent = new Intent(c.getApplicationContext(), AlarmReceiver.class);
+    private static PendingIntent createPendingIntent(Context c, NotificationClass alarm){
+        Intent alarmIntent = new Intent(c.getApplicationContext(), NotificationReceiver.class);
         alarmIntent.putExtra("name", alarm.name);
         alarmIntent.putExtra("id", alarm.id);
         return PendingIntent.getBroadcast(c.getApplicationContext(), alarm.id, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
     }
 
-    public static void cancelPendingIntent(String name,final int id, final Context context, boolean showToast){
-        List<AlarmClass> alarmList = JsonHandler.getAlarmList(context);
+    public static void cancelPendingIntent(final int id, final Context context, boolean showToast){
+        List<NotificationClass> alarmList = JsonHandler.getAlarmList(context);
 
         boolean success = false;
         for(int i=0; i<alarmList.size(); i++) {
@@ -130,11 +146,6 @@ public class ShowTimes extends Activity {
         foodList.setAdapter(adapter);
     }
 
-    public void finished(View v){
-        Intent i = new Intent(this, HomeScreen.class);
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
-    }
 
     public static Calendar getReadyTimeCal(){return readyTimeCal;}
 
@@ -172,6 +183,30 @@ public class ShowTimes extends Activity {
         });
     }
 
+    public void finished(View v){
+        final Intent i = new Intent(this, HomeScreen.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        if(interstitialAd != null && interstitialAd.isLoaded()){
+            interstitialAd.setAdListener(new AdListener() {
+                @Override
+                public void onAdClosed() {
+                    super.onAdClosed();
+                    startActivity(i);
+                }
+
+                @Override
+                public void onAdFailedToLoad(int errorCode) {
+                    super.onAdFailedToLoad(errorCode);
+                    startActivity(i);
+                }
+            });
+            interstitialAd.show();
+        }
+        else{
+            startActivity(i);
+        }
+
+    }
+
     @Override
     protected void onDestroy() {
         String jsonString = JsonHandler.getFoodItemJsonString(this, foodItemList);
@@ -207,8 +242,10 @@ public class ShowTimes extends Activity {
             readyTimeCal.setTime(ShowTimes.getReadyTimeCal().getTime());
             readyTimeCal.add(Calendar.MINUTE, -effectiveTotalTime);
 
-            startItem.setText(info[0] + " - " + info[1] + "\n(" + info[2] + " mins)");
-            startTime.setText(String.format("%02d:%02d", readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));
+            startItem.setText(String.format(Locale.getDefault(), "%s - %s \n(%s mins)",
+                    info[0], info[1], info[2]));
+            startTime.setText(String.format(Locale.getDefault(), "%02d:%02d",
+                    readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));
 
             return customView;
         }

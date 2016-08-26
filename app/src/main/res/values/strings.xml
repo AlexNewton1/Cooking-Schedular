@@ -11,13 +11,14 @@
     <string name="hold_to_update">Long hold to edit items</string>
     <string name="upcoming_reminders">Upcoming Reminders</string>
     <string name="get_recent_timings">Show Recent Timings</string>
-    <string name="upgrade">Upgrade To Pro</string>
+    <string name="upgrade_to_pro">Upgrade To Pro</string>
     <string name="show_saved_meals_menu_item">Show Saved Meals</string>
     <string name="load_or_view_meal">Load/View Saved Meal</string>
+    <string name="logo">Application logo</string>
 
 
     <!--......................................ADD ITEM SCREEN STRINGS........................................................-->
-    <string name="item_screen_banner_ad">ca-app-pub-3940256099942544/6300978111</string> <!--TODO - CHANGE TO PROPER AD KEY -->
+    <string name="item_screen_banner_ad">ca-app-pub-3940256099942544/6300978111</string> <!--TODO - CHANGE TO PROPER AD ID -->
     <string name="no_food_item_found">Please add at least one food item</string>
     <string name="no_previous_meal">No previous meal found</string>
     <string name="add_item">Add Item</string>
@@ -51,7 +52,8 @@
     <string name="showTimings">Show Times</string>
 
     <!--..........................................TIMINGS PAGE STRINGS.......................................................-->
-    <string name="timing_screen_banner_ad">ca-app-pub-3940256099942544/6300978111</string> <!--TODO - CHANGE TO PROPER AD KEY -->
+    <string name="timing_screen_banner_ad">ca-app-pub-3940256099942544/6300978111</string> <!--TODO - CHANGE TO PROPER AD ID -->
+    <string name="interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string> <!--TODO - CHANGE TO PROPER AD ID -->
     <string name="minutes">mins</string>
     <string name="reminders_set">Reminders Set</string>
     <string name="save_meal">Save Meal</string>
@@ -63,6 +65,8 @@
     <string name="title_activity_upgrade_screen">Upgrade To Ad Free</string>
     <string name="status">Current Status: </string>
     <string name="title_activity_saved_meals">SavedMeals</string>
+    <string name="free"> FREE</string>
+    <string name="upgraded"> UPGRADED</string>
 
 
     <!--............................................SAVED MEALS PAGE.............................................................-->

@@ -3,6 +3,7 @@
     package="com.SoftwareOverflow.CookingScheduler" >
 
     <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature android:name="android.hardware.screen.portrait" />
 
@@ -21,7 +22,7 @@
         </activity>
 
         <receiver
-            android:name=".AlarmReceiver"
+            android:name=".NotificationReceiver"
             android:process=":remote" />
 
         <activity

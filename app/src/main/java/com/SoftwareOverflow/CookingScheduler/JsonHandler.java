@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Store/retrieve AlarmClass & FoodItem objects ( using shared preferences and json)
- * Methods relating to foodItem objects are fo use with database
+ * Store/retrieve NotificationClass & FoodItem objects (using shared preferences and json)
+ * Methods relating to foodItem objects are for use with database
  * All methods static for use without creating object first
  * All json strings delimited with triple pipe character (|||)
  */
@@ -25,19 +25,19 @@ public class JsonHandler {
 
     /**
      * @param c - context
-     * @return - list of AlarmClass objects saved in sharedPrefs (contains alarm times etc)
+     * @return - list of NotificationClass objects saved in sharedPrefs (contains alarm times etc)
      */
-    public static List<AlarmClass> getAlarmList(Context c){
+    public static List<NotificationClass> getAlarmList(Context c){
         SharedPreferences sp = c.getApplicationContext().getSharedPreferences("alarms", Context.MODE_PRIVATE);
         String infoString = sp.getString("alarmInfo", "");
-        List<AlarmClass> alarmList = new ArrayList<>();
+        List<NotificationClass> alarmList = new ArrayList<>();
 
         if(!infoString.isEmpty()) {
-            Type type = new TypeToken<AlarmClass>() {}.getType();
+            Type type = new TypeToken<NotificationClass>() {}.getType();
 
             try {
                 for (String info : infoString.split("\\|\\|\\|")) {
-                    AlarmClass alarm = gson.fromJson(info, type);
+                    NotificationClass alarm = gson.fromJson(info, type);
                     alarmList.add(alarm);
                 }
             }
@@ -50,12 +50,12 @@ public class JsonHandler {
 
     /**
      * @param c - context
-     * @param alarmList - List of AlarmClass objects to be saved in SharedPreferences
+     * @param alarmList - List of NotificationClass objects to be saved in SharedPreferences
      */
-    public static void putAlarmList(Context c, List<AlarmClass> alarmList){
+    public static void putAlarmList(Context c, List<NotificationClass> alarmList){
         SharedPreferences sp = c.getApplicationContext().getSharedPreferences("alarms", Context.MODE_PRIVATE);
         StringBuilder sb = new StringBuilder();
-        for(AlarmClass alarm: alarmList) sb.append(gson.toJson(alarm)).append("|||");
+        for(NotificationClass alarm: alarmList) sb.append(gson.toJson(alarm)).append("|||");
         sp.edit().putString("alarmInfo", sb.toString()).apply();
     }
 
@@ -81,16 +81,18 @@ public class JsonHandler {
         return foodItemList;
     }
 
-    public static String getFoodItemJsonString(Context c, List<FoodItem> foodItemList){
+    public static String getFoodItemJsonString(List<FoodItem> foodItemList){
         StringBuilder sb = new StringBuilder();
         for (FoodItem food: foodItemList) sb.append(gson.toJson(food)).append("|||");
         return sb.toString();
     }
 
+    /*
     public static void putFoodItemList(Context c, List<FoodItem> foodItems){
         SharedPreferences sp = c.getApplicationContext().getSharedPreferences("foods", Context.MODE_PRIVATE);
         StringBuilder sb = new StringBuilder();
         for(FoodItem food: foodItems) sb.append(gson.toJson(food)).append("|||");
         sp.edit().putString("foodInfo", sb.toString()).apply();
     }
+    */
 }

@@ -11,6 +11,7 @@
     tools:context="com.SoftwareOverflow.CookingScheduler.HomeScreen">
 
     <ImageView
+        android:contentDescription="@string/logo"
         android:id="@+id/homeScreenImageView"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
@@ -27,28 +28,20 @@
         android:gravity="center"
         android:orientation="vertical">
 
+
         <Button
-            android:padding="10dp"
-            style="@style/Widget.AppCompat.Button.Colored"
+            style="@style/Widget.HomeScreenButton"
             android:id="@+id/getPreviousTimings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:onClick="getTimings"
             android:text="@string/get_recent_timings" />
 
         <Button
-            android:padding="10dp"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/Widget.HomeScreenButton"
             android:onClick="loadMeal"
             android:text="@string/load_or_view_meal" />
 
         <Button
-            android:padding="10dp"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/Widget.HomeScreenButton"
             android:onClick="createMeal"
             android:text="@string/home_screen_new" />
 

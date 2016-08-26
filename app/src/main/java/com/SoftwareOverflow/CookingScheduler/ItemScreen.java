@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -34,6 +36,10 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.SoftwareOverflow.CookingScheduler.util.IabHelper;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -55,10 +61,11 @@ public class ItemScreen extends Activity implements View.OnClickListener {
     private EditText stageName, stageTime, itemName;
     private Button finishAddingItemButton, finishAddingStageButton,
             cancelAddingItemButton, cancelAddingStageButton;
-    private ListView stagesLV;
 
     private int updatingSavedMeal = -1; //value of the SQLite row to update (-1 if not updating).
     private String mealName, mealNotes;
+
+    private IabHelper mHelper;
 
 
     @SuppressLint("ShowToast")
@@ -76,7 +83,7 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         }
 
 
-        //region------------------------ INITIALIZING DIALOGS & BUTTONS ---------------------------------------------------------------------
+        //region------------------------ INITIALIZING DIALOGS & BUTTONS ----------------------------
         LayoutInflater inflater = LayoutInflater.from(this);
         addItemView = inflater.inflate(R.layout.dialog_add_item, parentViewGroup);
         addItemDialog = new AlertDialog.Builder(this).setView(addItemView).create();
@@ -93,12 +100,14 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         finishAddingItemButton = (Button) addItemView.findViewById(R.id.addItemButton);
         finishAddingStageButton = (Button) addStageView.findViewById(R.id.finishAddingStage);
         cancelAddingStageButton = (Button) addStageView.findViewById(R.id.cancelAddStage);
-        //endregion initializing dialogs & buttons
+        //endregion initializing
+
 
         //getting intent extras (only when loading saved meals)
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            updatingSavedMeal = extras.getInt("updatingMeal", -1); //value of SQLite row ID of meal to be updated (-1 if creating new meal)
+            //SQLite ID of loaded meal (-1 if creating new meal)
+            updatingSavedMeal = extras.getInt("updatingMeal", -1);
             mealName = extras.getString("mealName", "");
             mealNotes = extras.getString("mealNotes", "");
             String jsonString = extras.getString("jsonString", "");
@@ -109,20 +118,30 @@ public class ItemScreen extends Activity implements View.OnClickListener {
             showItemsLV(adapterStrings);
         }
 
-        /*
-        //load ad in thread
-        //TODO - check if free / upgraded
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final AdView adView = (AdView)findViewById(R.id.itemScreenBannerAd);
-                //adding emulator and phone as test devices
-                AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                        .addTestDevice("2A0E7D2865A3C592033F3707402D0BBB").build();
-                adView.loadAd(adRequest);
-            }
-        }).start();
-        */
+        String base64PublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAorDc/" +
+                "54H1bPEWKCxT8Qh00lBaacIvXIRUX8K+EAfVaNUpzLNlbbziKbKUAumrasQF+iIff2" +
+                "oslvupLLPCZcG8k4v9ujfPs1g9CGKc8bTYQ47yBI1hIYq6GEoGffpHe+xA0+bQ2ujn" +
+                "rT9g+3E6Dc0TaqfH+O0shw3zwgnh9nRWbb/ebMevgU4h7/tcjx8Omx7S13KxHvnwFJ" +
+                "5lWg8RJPvTKYBVDkUyhfqvYKikux7V5UZmK9fCR4kea/ULwzRf+AsbG7YgVXjQQIMH" +
+                "GmpxWWs1OioXeVR8TbYdRa0aMmp8aUHlnHMhxhlZCUotCrYfjftPhLImm88TPb14tW" +
+                "/nLj5EQIDAQAB";
+        List<String> keyList;
+
+
+        //load ad
+        if(UpgradeScreen.showAds ) {
+            Handler handler = new Handler();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    final AdView adView = (AdView) findViewById(R.id.itemScreenBannerAd);
+                    //adding emulator and phone as test devices
+                    AdRequest adRequest = new AdRequest.Builder().build();
+                    adView.loadAd(adRequest);
+                    adView.loadAd(adRequest);
+                }
+            });
+        }
     }
 
     public void addItem(View view) {
@@ -169,7 +188,7 @@ public class ItemScreen extends Activity implements View.OnClickListener {
     private void showStagesLV(final FoodItem foodItem) {
         List<String> foodStagesList = foodItem.getFoodStages();
 
-        stagesLV = (ListView) addItemView.findViewById(R.id.stagesListView);
+        ListView stagesLV = (ListView) addItemView.findViewById(R.id.stagesListView);
         stagesLV.getLayoutParams().height = HomeScreen.screenHeight;
 
         if (foodStagesList != null && foodStagesList.size() != 0) {
@@ -326,13 +345,16 @@ public class ItemScreen extends Activity implements View.OnClickListener {
             RadioButton manualSelect = (RadioButton) dialogView.findViewById(R.id.manualTimeSelectRB);
             final RadioButton earliestSelect = (RadioButton) dialogView.findViewById(R.id.ASAP_RB);
 
-            readyTimeTV.setText(String.format(" %02d:%02d", earliestReadyTime().get(Calendar.HOUR_OF_DAY), earliestReadyTime().get(Calendar.MINUTE)));
+            readyTimeTV.setText(String.format(Locale.getDefault()," %02d:%02d",
+                    earliestReadyTime().get(Calendar.HOUR_OF_DAY),
+                    earliestReadyTime().get(Calendar.MINUTE)));
             earliestSelect.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked) {
                         Calendar cal = earliestReadyTime();
-                        readyTimeTV.setText(String.format(" %02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
+                        readyTimeTV.setText(String.format(Locale.getDefault(), "%02d:%02d",
+                                cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
                     }
                 }
             });
@@ -346,14 +368,16 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                             timePicker.setHour(cal.get(Calendar.HOUR_OF_DAY));
                             timePicker.setMinute(cal.get(Calendar.MINUTE));
                         } else {
-                            //USING DEPRECATED METHODS FOR API < 23 - setCurrentHour() & setCurrentMinute() deprecated
+                            //USING DEPRECATED METHODS FOR API < 23
+                            //setCurrentHour() & setCurrentMinute() (deprecated in API 23)
                             timePicker.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
                             timePicker.setCurrentMinute(cal.get(Calendar.MINUTE));
                         }
                         timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
                             @Override
                             public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-                                readyTimeTV.setText(String.format(" %02d:%02d", hourOfDay, minute));
+                                readyTimeTV.setText(String.format(Locale.getDefault(),
+                                        " %02d:%02d", hourOfDay, minute));
                             }
                         });
 
@@ -370,19 +394,19 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                         chosenTime.setTimeInMillis(earliestReadyTime().getTimeInMillis());
                     } else {
                         if (Build.VERSION.SDK_INT >= 23) {
-                            chosenTime.set(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth(),
-                                    timePicker.getHour(), timePicker.getMinute());
+                            chosenTime.set(datePicker.getYear(), datePicker.getMonth(),
+                                    datePicker.getDayOfMonth(), timePicker.getHour(),
+                                    timePicker.getMinute());
                         } else {
                             //USING DEPRECATED METHODS FOR GETTING TIME FROM TIME PICKER
                             //getCurrentHour() & getCurrentMinute() deprecated in API 23
-                            chosenTime.set(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth(),
-                                    timePicker.getCurrentHour(), timePicker.getCurrentMinute());
+                            chosenTime.set(datePicker.getYear(), datePicker.getMonth(),
+                                    datePicker.getDayOfMonth(), timePicker.getCurrentHour(),
+                                    timePicker.getCurrentMinute());
                         }
                     }
                     if (chosenTime.getTimeInMillis() >= earliestTime.getTimeInMillis()) {
-
-
-                        String jsonString = JsonHandler.getFoodItemJsonString(getApplicationContext(), foodItemList);
+                        String jsonString = JsonHandler.getFoodItemJsonString(foodItemList);
                         startActivity(new Intent(ItemScreen.this, ShowTimes.class)
                                 .putExtra("jsonString", jsonString)
                                 .putExtra("readyTimeCal", chosenTime)
@@ -407,47 +431,48 @@ public class ItemScreen extends Activity implements View.OnClickListener {
     }
 
     public void saveMeal(View v) {
-        //TODO -- check if free/upgraded
-        if (foodItemList.isEmpty()) {
-            mToast.setText("Please add at least 1 item first");
-            mToast.show();
-        } else {
-            LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-            View dialogView = inflater.inflate(R.layout.dialog_save_meal, parentViewGroup);
-            saveMealDialog = new AlertDialog.Builder(this).setView(dialogView).show();
+        if(!UpgradeScreen.showAds) { //upgraded => allowed to save meals
+            if (foodItemList.isEmpty()) {
+                mToast.setText("Please add at least 1 item first");
+                mToast.show();
+            } else {
+                LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+                View dialogView = inflater.inflate(R.layout.dialog_save_meal, parentViewGroup);
+                saveMealDialog = new AlertDialog.Builder(this).setView(dialogView).show();
 
-            final EditText nameET = (EditText) dialogView.findViewById(R.id.mealNameET);
-            final EditText notesET = (EditText) dialogView.findViewById(R.id.mealNotesET);
-            nameET.setText(mealName);
-            notesET.setText(mealNotes);
+                final EditText nameET = (EditText) dialogView.findViewById(R.id.mealNameET);
+                final EditText notesET = (EditText) dialogView.findViewById(R.id.mealNotesET);
+                nameET.setText(mealName);
+                notesET.setText(mealNotes);
 
-            Button saveButton = (Button) dialogView.findViewById(R.id.saveMealButton);
-            Button deleteButton = (Button) dialogView.findViewById(R.id.cancelSavingMealButton);
-            saveButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String name = nameET.getText().toString();
-                    String notes = notesET.getText().toString();
+                Button saveButton = (Button) dialogView.findViewById(R.id.saveMealButton);
+                Button deleteButton = (Button) dialogView.findViewById(R.id.cancelSavingMealButton);
+                saveButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String name = nameET.getText().toString();
+                        String notes = notesET.getText().toString();
 
-                    if (notes.isEmpty()) notes = "No Notes Saved";
-                    if (name.isEmpty()) {
-                        mToast.setText("Please enter a meal name first");
-                        mToast.show();
-                    } else {
-                        MealDatabase mealDB = new MealDatabase(ItemScreen.this, null);
-                        String jsonString = JsonHandler.getFoodItemJsonString(ItemScreen.this, foodItemList);
-                        if (mealDB.addMeal(name, jsonString, notes, updatingSavedMeal)) {
-                            saveMealDialog.dismiss();
+                        if (notes.isEmpty()) notes = "No Notes Saved";
+                        if (name.isEmpty()) {
+                            mToast.setText("Please enter a meal name first");
+                            mToast.show();
+                        } else {
+                            MealDatabase mealDB = new MealDatabase(ItemScreen.this, null);
+                            String jsonString = JsonHandler.getFoodItemJsonString(foodItemList);
+                            if (mealDB.addMeal(name, jsonString, notes, updatingSavedMeal)) {
+                                saveMealDialog.dismiss();
+                            }
                         }
                     }
-                }
-            });
-            deleteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    saveMealDialog.dismiss();
-                }
-            });
+                });
+                deleteButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        saveMealDialog.dismiss();
+                    }
+                });
+            }
         }
     }
 
@@ -522,12 +547,13 @@ public class ItemScreen extends Activity implements View.OnClickListener {
     }
 
 
-
     private class AdapterItemStages extends BaseAdapter {
 
         private int startPos, currentPos;
         private ArrayList<String> data, tempData;
         private long lastTouchTime = 0;
+        private int lastTouchY;
+        private final int MAX_TOUCH_DISTANCE = 100;
         private final long MAX_TOUCH_DELAY = 1000;
 
 
@@ -537,6 +563,7 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public View getView(final int position, View convertView, final ViewGroup parent) {
             ViewHolder holder;
 
@@ -561,16 +588,19 @@ public class ItemScreen extends Activity implements View.OnClickListener {
             holder.stageTime.setText(info[1]);
             holder.stageNumber.setText(String.format(Locale.getDefault(), "%1d", position + 1));
 
-
             convertView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent motionEvent) {
                     if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                         //only initiate drag on double click
                         long thisTouchTime = System.currentTimeMillis();
-                        boolean isDoubleClick = thisTouchTime < lastTouchTime + MAX_TOUCH_DELAY;
+                        int thisTouchY = (int) motionEvent.getRawY();
+                        boolean isDoubleClick = (thisTouchTime < lastTouchTime + MAX_TOUCH_DELAY) &&
+                                (Math.abs(thisTouchY - lastTouchY) <= MAX_TOUCH_DISTANCE);
+                        Log.d("listView", "deltaY: " + Math.abs(thisTouchY - lastTouchY));
                         if(!isDoubleClick){
                             lastTouchTime = thisTouchTime;
+                            lastTouchY = thisTouchY;
                             return false;
                         }
                         else { //start drag
@@ -579,8 +609,17 @@ public class ItemScreen extends Activity implements View.OnClickListener {
 
                             ClipData clipData = ClipData.newPlainText("", "");
                             View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(view);
-                            view.startDrag(clipData, shadowBuilder, view, 0);
+                            //USING DEPRECATED METHOD FOR API < 24
+                            //startDrag() (deprecated in API 24) --> startDragAndDrop()
+                            //startDrag() (deprecated in API 24) --> startDragAndDrop()
+                            if(Build.VERSION.SDK_INT < 24){
+                                view.startDrag(clipData, shadowBuilder, view, 0);
+                            }
+                            else{
+                                view.startDragAndDrop(clipData, shadowBuilder, view, 0);
+                            }
                             view.setVisibility(View.GONE);
+
                             return true;
                         }
                     } else {

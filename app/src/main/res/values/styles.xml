@@ -1,8 +1,7 @@
 <resources>
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"></style>
-    <style name="homeScreenTheme" parent="Theme.AppCompat.Light"></style>
-
+    <style name="homeScreenTheme" parent="android:Theme.Holo.Light"></style>
 
     <style name="MyTextViewStyle" parent="android:Widget.TextView">
         <item name="android:textColor">@android:color/black</item>
@@ -15,4 +14,14 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
+    
+    <style name="Widget.HomeScreenButton" parent="Widget.AppCompat.Button">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:backgroundTint">@color/darkgreen</item>
+
+
+    </style>
+
 </resources>

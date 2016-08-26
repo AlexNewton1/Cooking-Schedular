@@ -11,7 +11,7 @@ import android.support.v4.app.NotificationCompat;
 /**
  * Creates notifications
  */
-public class AlarmReceiver extends BroadcastReceiver {
+public class NotificationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -31,7 +31,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         notification.vibrate = new long[] {0};
         manager.notify((int) System.currentTimeMillis(), notification);
 
-        ShowTimes.cancelPendingIntent(name, id, context.getApplicationContext(), false);
+        ShowTimes.cancelPendingIntent(id, context.getApplicationContext(), false);
     }
 
 

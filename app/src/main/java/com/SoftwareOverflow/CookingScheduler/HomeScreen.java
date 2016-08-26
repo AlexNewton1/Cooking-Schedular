@@ -28,6 +28,7 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class HomeScreen extends Activity implements Dialog.OnClickListener {
 
@@ -73,17 +74,19 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
         }
     }
     public void loadMeal(View v){
-        //TODO - check if upgraded before showing saved meals.....
-        MealDatabase mealDB = new MealDatabase(HomeScreen.this, null);
-        if(mealDB.getRowNum()!=0) startActivity(new Intent(HomeScreen.this, SavedMeals.class));
-        else {
-            mToast.setText( "No Saved Meals");
-            mToast.show();
+        if(!UpgradeScreen.showAds) { //upgraded => can save meals
+            MealDatabase mealDB = new MealDatabase(HomeScreen.this, null);
+            if (mealDB.getRowNum() != 0)
+                startActivity(new Intent(HomeScreen.this, SavedMeals.class));
+            else {
+                mToast.setText("No Saved Meals");
+                mToast.show();
+            }
         }
     }
 
     private void showUpcomingReminders() {
-        final List<AlarmClass> alarmList = JsonHandler.getAlarmList(this);
+        final List<NotificationClass> alarmList = JsonHandler.getAlarmList(this);
         Collections.sort(alarmList);
 
         if (alarmList.size() > 0) {
@@ -108,8 +111,9 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                             .setPositiveButton("Delete All Reminders", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    for (AlarmClass alarm : alarmList) {
-                                        ShowTimes.cancelPendingIntent(alarm.name, alarm.id, getApplicationContext(), false);
+                                    for (NotificationClass alarm : alarmList) {
+                                        ShowTimes.cancelPendingIntent(
+                                                alarm.id, getApplicationContext(), false);
                                     }
                                     dialog.dismiss();
                                     alertDialog.dismiss();
@@ -145,8 +149,9 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                             .setPositiveButton("Delete Reminder", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    AlarmClass alarm = alarmList.get(position);
-                                    ShowTimes.cancelPendingIntent(alarm.name, alarm.id, getApplicationContext(), true);
+                                    NotificationClass alarm = alarmList.get(position);
+                                    ShowTimes.cancelPendingIntent(
+                                            alarm.id, getApplicationContext(), true);
                                     alertDialog.dismiss();
                                     showUpcomingReminders();
                                     dialog.dismiss();
@@ -211,8 +216,9 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
             cal.setTimeInMillis(Long.parseLong(info[1]));
 
             nameTV.setText(info[0]);
-            timeTV.setText(String.format("%02d-%02d-%04d at %02d:%02d", cal.get(Calendar.DAY_OF_MONTH),
-                    cal.get(Calendar.MONTH), cal.get(Calendar.YEAR), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
+            timeTV.setText(String.format(Locale.getDefault(), "%02d-%02d-%04d at %02d:%02d",
+                    cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR),
+                    cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
 
             return customView;
         }

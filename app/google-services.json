@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "809851404357",
+    "firebase_url": "https://cooking-scheduler.firebaseio.com",
+    "project_id": "cooking-scheduler",
+    "storage_bucket": "cooking-scheduler.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809851404357:android:c979a2513a4d3025",
+        "android_client_info": {
+          "package_name": "com.softwareoverflow.cookingtimer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "809851404357-g5ijv44iiubopivgj1jfitror8ihujuj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBy6nPOsC1VfIR0h7djSI2TdJPtZiMH16g"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

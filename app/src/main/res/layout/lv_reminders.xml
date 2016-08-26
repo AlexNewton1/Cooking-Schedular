@@ -9,7 +9,7 @@
         android:id="@+id/upcomingReminderTimeTV"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="7"
+        android:layout_weight="6"
         android:gravity="center" />
 
     <View
@@ -21,7 +21,7 @@
         android:id="@+id/upcomingReminderItemTV"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="3"
+        android:layout_weight="4"
         android:gravity="center" />
 
 </LinearLayout>
