@@ -25,6 +25,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.SoftwareOverflow.CookingScheduler.util.BillingClass;
+
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +38,7 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
 
     private Toast mToast;
     public static int screenHeight;
+    protected static BillingClass billing;
 
     @Override
     @SuppressLint("ShowToast")
@@ -53,7 +56,11 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
 
         mToast = Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT);
+
+        billing = new BillingClass(this);
+
     }
+
 
     public void createMeal(View v) {
         startActivity(new Intent(this, ItemScreen.class));
@@ -74,7 +81,7 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
         }
     }
     public void loadMeal(View v){
-        if(!UpgradeScreen.showAds) { //upgraded => can save meals
+        if(BillingClass.isUpgraded) { //upgraded => can save meals
             MealDatabase mealDB = new MealDatabase(HomeScreen.this, null);
             if (mealDB.getRowNum() != 0)
                 startActivity(new Intent(HomeScreen.this, SavedMeals.class));
@@ -83,6 +90,11 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                 mToast.show();
             }
         }
+        else {
+            mToast.setText("Please upgrade to unlock this feature");
+            mToast.show();
+        }
+
     }
 
     private void showUpcomingReminders() {
@@ -161,6 +173,20 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                 }
             });
         } else Toast.makeText(this, R.string.no_upcoming_alarms, Toast.LENGTH_SHORT).show();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        billing.dispose();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        billing.setContext(this);
+        billing.queryInventory();
     }
 
     @Override

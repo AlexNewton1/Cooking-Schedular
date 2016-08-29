@@ -54,7 +54,7 @@
     </LinearLayout>
 
     <Button
-        android:onClick="upgrade"
+        android:id="@+id/upgradeButton"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="50dp"
         android:layout_alignParentBottom="true"

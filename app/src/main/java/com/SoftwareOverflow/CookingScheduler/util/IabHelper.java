@@ -320,7 +320,7 @@ public class IabHelper {
         synchronized (mAsyncInProgressLock) {
             if (mAsyncInProgress) {
                 throw new IabAsyncInProgressException("Can't dispose because an async operation " +
-                    "(" + mAsyncOperation + ") is in progress.");
+                        "(" + mAsyncOperation + ") is in progress.");
             }
         }
         logDebug("Disposing.");
@@ -388,24 +388,24 @@ public class IabHelper {
     OnIabPurchaseFinishedListener mPurchaseListener;
 
     public void launchPurchaseFlow(Activity act, String sku, int requestCode, OnIabPurchaseFinishedListener listener)
-        throws IabAsyncInProgressException {
+            throws IabAsyncInProgressException {
         launchPurchaseFlow(act, sku, requestCode, listener, "");
     }
 
     public void launchPurchaseFlow(Activity act, String sku, int requestCode,
-            OnIabPurchaseFinishedListener listener, String extraData)
-        throws IabAsyncInProgressException {
+                                   OnIabPurchaseFinishedListener listener, String extraData)
+            throws IabAsyncInProgressException {
         launchPurchaseFlow(act, sku, ITEM_TYPE_INAPP, null, requestCode, listener, extraData);
     }
 
     public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
-            OnIabPurchaseFinishedListener listener) throws IabAsyncInProgressException {
+                                               OnIabPurchaseFinishedListener listener) throws IabAsyncInProgressException {
         launchSubscriptionPurchaseFlow(act, sku, requestCode, listener, "");
     }
 
     public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
-            OnIabPurchaseFinishedListener listener, String extraData)
-        throws IabAsyncInProgressException {
+                                               OnIabPurchaseFinishedListener listener, String extraData)
+            throws IabAsyncInProgressException {
         launchPurchaseFlow(act, sku, ITEM_TYPE_SUBS, null, requestCode, listener, extraData);
     }
 
@@ -430,8 +430,8 @@ public class IabHelper {
      *      purchase and will always be returned when the purchase is queried.
      */
     public void launchPurchaseFlow(Activity act, String sku, String itemType, List<String> oldSkus,
-            int requestCode, OnIabPurchaseFinishedListener listener, String extraData)
-        throws IabAsyncInProgressException {
+                                   int requestCode, OnIabPurchaseFinishedListener listener, String extraData)
+            throws IabAsyncInProgressException {
         checkNotDisposed();
         checkSetupDone("launchPurchaseFlow");
         flagStartAsync("launchPurchaseFlow");
@@ -482,6 +482,8 @@ public class IabHelper {
                     requestCode, new Intent(),
                     Integer.valueOf(0), Integer.valueOf(0),
                     Integer.valueOf(0));
+
+            flagEndAsync();
         }
         catch (SendIntentException e) {
             logError("SendIntentException while launching purchase flow for sku " + sku);
@@ -616,7 +618,7 @@ public class IabHelper {
      * @throws IabException if a problem occurs while refreshing the inventory.
      */
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
-                                                                                List<String> moreSubsSkus) throws IabException {
+                                    List<String> moreSubsSkus) throws IabException {
         checkNotDisposed();
         checkSetupDone("queryInventory");
         try {
@@ -684,8 +686,8 @@ public class IabHelper {
      * @param listener The listener to notify when the refresh operation completes.
      */
     public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreItemSkus,
-            final List<String> moreSubsSkus, final QueryInventoryFinishedListener listener)
-        throws IabAsyncInProgressException {
+                                    final List<String> moreSubsSkus, final QueryInventoryFinishedListener listener)
+            throws IabAsyncInProgressException {
         final Handler handler = new Handler();
         checkNotDisposed();
         checkSetupDone("queryInventory");
@@ -717,7 +719,7 @@ public class IabHelper {
     }
 
     public void queryInventoryAsync(QueryInventoryFinishedListener listener)
-        throws IabAsyncInProgressException{
+            throws IabAsyncInProgressException{
         queryInventoryAsync(false, null, null, listener);
     }
 
@@ -799,7 +801,7 @@ public class IabHelper {
      * @param listener The listener to notify when the consumption operation finishes.
      */
     public void consumeAsync(Purchase purchase, OnConsumeFinishedListener listener)
-        throws IabAsyncInProgressException {
+            throws IabAsyncInProgressException {
         checkNotDisposed();
         checkSetupDone("consume");
         List<Purchase> purchases = new ArrayList<Purchase>();
@@ -813,7 +815,7 @@ public class IabHelper {
      * @param listener The listener to notify when the consumption operation finishes.
      */
     public void consumeAsync(List<Purchase> purchases, OnConsumeMultiFinishedListener listener)
-        throws IabAsyncInProgressException {
+            throws IabAsyncInProgressException {
         checkNotDisposed();
         checkSetupDone("consume");
         consumeAsyncInternal(purchases, null, listener);
@@ -832,15 +834,15 @@ public class IabHelper {
                 "5:Developer Error/6:Error/7:Item Already Owned/" +
                 "8:Item not owned").split("/");
         String[] iabhelper_msgs = ("0:OK/-1001:Remote exception during initialization/" +
-                                   "-1002:Bad response received/" +
-                                   "-1003:Purchase signature verification failed/" +
-                                   "-1004:Send intent failed/" +
-                                   "-1005:User cancelled/" +
-                                   "-1006:Unknown purchase response/" +
-                                   "-1007:Missing token/" +
-                                   "-1008:Unknown error/" +
-                                   "-1009:Subscriptions not available/" +
-                                   "-1010:Invalid consumption attempt").split("/");
+                "-1002:Bad response received/" +
+                "-1003:Purchase signature verification failed/" +
+                "-1004:Send intent failed/" +
+                "-1005:User cancelled/" +
+                "-1006:Unknown purchase response/" +
+                "-1007:Missing token/" +
+                "-1008:Unknown error/" +
+                "-1009:Subscriptions not available/" +
+                "-1010:Invalid consumption attempt").split("/");
 
         if (code <= IABHELPER_ERROR_BASE) {
             int index = IABHELPER_ERROR_BASE - code;
@@ -898,8 +900,8 @@ public class IabHelper {
         synchronized (mAsyncInProgressLock) {
             if (mAsyncInProgress) {
                 throw new IabAsyncInProgressException("Can't start async operation (" +
-                    operation + ") because another async operation (" + mAsyncOperation +
-                    ") is in progress.");
+                        operation + ") because another async operation (" + mAsyncOperation +
+                        ") is in progress.");
             }
             mAsyncOperation = operation;
             mAsyncInProgress = true;
@@ -1067,7 +1069,7 @@ public class IabHelper {
     void consumeAsyncInternal(final List<Purchase> purchases,
                               final OnConsumeFinishedListener singleListener,
                               final OnConsumeMultiFinishedListener multiListener)
-        throws IabAsyncInProgressException {
+            throws IabAsyncInProgressException {
         final Handler handler = new Handler();
         flagStartAsync("consume");
         (new Thread(new Runnable() {

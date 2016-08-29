@@ -36,6 +36,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.SoftwareOverflow.CookingScheduler.util.BillingClass;
 import com.SoftwareOverflow.CookingScheduler.util.IabHelper;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -129,7 +130,7 @@ public class ItemScreen extends Activity implements View.OnClickListener {
 
 
         //load ad
-        if(UpgradeScreen.showAds ) {
+        if(!BillingClass.isUpgraded) {
             Handler handler = new Handler();
             handler.post(new Runnable() {
                 @Override
@@ -431,7 +432,7 @@ public class ItemScreen extends Activity implements View.OnClickListener {
     }
 
     public void saveMeal(View v) {
-        if(!UpgradeScreen.showAds) { //upgraded => allowed to save meals
+        if(BillingClass.isUpgraded) { //upgraded => allowed to save meals
             if (foodItemList.isEmpty()) {
                 mToast.setText("Please add at least 1 item first");
                 mToast.show();

@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.SoftwareOverflow.CookingScheduler.util.BillingClass;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -73,21 +74,23 @@ public class ShowTimes extends Activity {
         showListView(stageInfo);
 
         //start loading ad 1 second after screen loaded
-        //TODO - check if free/upgraded
         final AdView adView = (AdView) findViewById(R.id.showTimesScreenBannerAd);
-        Handler handler = new Handler();
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                AdRequest adRequest = new AdRequest.Builder().build();
-                adView.loadAd(adRequest);
-                interstitialAd = new InterstitialAd(ShowTimes.this);
-                interstitialAd.setAdUnitId(getResources().
-                        getString(R.string.interstitial_ad_unit_id));
-                interstitialAd.loadAd(adRequest);
-            }
-        });
+        if(!BillingClass.isUpgraded) {
+            Handler handler = new Handler();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    AdRequest adRequest = new AdRequest.Builder().build();
+                    adView.loadAd(adRequest);
+                    interstitialAd = new InterstitialAd(ShowTimes.this);
+                    interstitialAd.setAdUnitId(getResources().
+                            getString(R.string.interstitial_ad_unit_id));
+                    interstitialAd.loadAd(adRequest);
+                }
+            });
         }
+        else adView.setVisibility(View.GONE);
+    }
 
     private void setReminders(Calendar readyTimeCal, String[] itemList) {
         List<NotificationClass> alarmList = JsonHandler.getAlarmList(this);
@@ -169,7 +172,7 @@ public class ShowTimes extends Activity {
                 String notes = mealNotes.getText().toString();
 
                 if (!name.equals("")) {
-                    String jsonString = JsonHandler.getFoodItemJsonString(ShowTimes.this, foodItemList);
+                    String jsonString = JsonHandler.getFoodItemJsonString(foodItemList);
                     mealDatabase.addMeal(name, jsonString, notes, -1);
                 } else
                     Toast.makeText(ShowTimes.this, "Please enter a name for the meal", Toast.LENGTH_SHORT).show();
@@ -209,7 +212,7 @@ public class ShowTimes extends Activity {
 
     @Override
     protected void onDestroy() {
-        String jsonString = JsonHandler.getFoodItemJsonString(this, foodItemList);
+        String jsonString = JsonHandler.getFoodItemJsonString(foodItemList);
         long readyTimeMillis = readyTimeCal.getTimeInMillis();
 
         SharedPreferences sharedPrefs = getSharedPreferences("foodItems", MODE_PRIVATE);
