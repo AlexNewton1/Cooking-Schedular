@@ -582,7 +582,7 @@ public class IabHelper {
             // result code was OK, but in-app billing response was not OK.
             logDebug("Result code was OK but in-app billing response was not OK: " + getResponseDesc(responseCode));
             if (mPurchaseListener != null) {
-                result = new IabResult(responseCode, "Problem purchashing item.");
+                result = new IabResult(responseCode, "Problem purchasing item.");
                 mPurchaseListener.onIabPurchaseFinished(result, null);
             }
         }
@@ -714,6 +714,8 @@ public class IabHelper {
                         }
                     });
                 }
+
+                Log.d("IAB", "inv query finished!");
             }
         })).start();
     }

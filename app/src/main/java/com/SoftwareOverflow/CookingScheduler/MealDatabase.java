@@ -25,9 +25,9 @@ public class MealDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String query = "CREATE TABLE " + TABLE_MEALS + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + COLUMN_MEAL_NAME + " TEXT NOT NULL, " + COLUMN_JSON_STRING + " TEXT NOT NULL, "
-                + COLUMN_NOTES + " TEXT NOT NULL);";
+        String query = "CREATE TABLE " + TABLE_MEALS + " (" + COLUMN_ID +
+                " INTEGER PRIMARY KEY AUTOINCREMENT, "  + COLUMN_MEAL_NAME + " TEXT NOT NULL, " +
+                COLUMN_JSON_STRING + " TEXT NOT NULL, " + COLUMN_NOTES + " TEXT NOT NULL);";
         db.execSQL(query);
     }
 
@@ -44,7 +44,7 @@ public class MealDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_JSON_STRING, jsonString);
         values.put(COLUMN_NOTES, notes);
 
-        //SAVING NEW MEAL
+        //saving new meal
         if (rowToUpdate == -1) {
             if (!isDuplicateMeal(db, mealName)) { //write to database
                 db.insert(TABLE_MEALS, null, values);
@@ -53,10 +53,11 @@ public class MealDatabase extends SQLiteOpenHelper {
                 return true;
             }
             db.close();
-            Toast.makeText(context, "A meal with this name already exists.\nPlease choose a different meal name", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "A meal with this name already exists." +
+                    "\nPlease choose a different meal name", Toast.LENGTH_SHORT).show();
             return false; //return false if duplicate found, toast to notify user
         }
-        //UPDATING PREVIOUSLY SAVED MEAL
+        //updating previous meal
         else {
             db.update(TABLE_MEALS, values, COLUMN_ID + "=" + rowToUpdate, null);
             db.close();
@@ -106,13 +107,14 @@ public class MealDatabase extends SQLiteOpenHelper {
 
     /**
      * @param searchString - Returns all meals with searchString contained within that meal name
-     * @return - String Array = {MealName, JsonString (to be used to convert back to food items), Notes}
+     * @return - String Array = {MealName, JsonString (used to convert back to FoodItem), Notes}
      */
     public String[] getSavedMeals(String searchString) {
         try {
             String mealNameQuery = "%" + searchString + "%";
             String query = "SELECT * FROM " + TABLE_MEALS + " WHERE " + COLUMN_MEAL_NAME + " LIKE "
-                    + "'" + mealNameQuery + "' ORDER BY " + COLUMN_MEAL_NAME + " COLLATE NOCASE DESC";
+                    + "'" + mealNameQuery + "' ORDER BY " + COLUMN_MEAL_NAME
+                    + " COLLATE NOCASE DESC";
             SQLiteDatabase db = getReadableDatabase();
             Cursor cursor = db.rawQuery(query, null);
             int rowCount = cursor.getCount();

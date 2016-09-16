@@ -37,7 +37,6 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.SoftwareOverflow.CookingScheduler.util.BillingClass;
-import com.SoftwareOverflow.CookingScheduler.util.IabHelper;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 
@@ -49,7 +48,6 @@ import java.util.Locale;
 
 public class ItemScreen extends Activity implements View.OnClickListener {
 
-    //TODO - sort parentViewGroup to avoid passing null when inflating layouts
     private ViewGroup parentViewGroup = null;
     private View addItemView;
     private AlertDialog addItemDialog, addStageDialog, saveMealDialog;
@@ -66,8 +64,6 @@ public class ItemScreen extends Activity implements View.OnClickListener {
     private int updatingSavedMeal = -1; //value of the SQLite row to update (-1 if not updating).
     private String mealName, mealNotes;
 
-    private IabHelper mHelper;
-
 
     @SuppressLint("ShowToast")
     @Override
@@ -75,6 +71,7 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_screen);
 
+        parentViewGroup = (ViewGroup) findViewById(R.id.activity_item_screen);
 
         mToast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
 
@@ -86,9 +83,10 @@ public class ItemScreen extends Activity implements View.OnClickListener {
 
         //region------------------------ INITIALIZING DIALOGS & BUTTONS ----------------------------
         LayoutInflater inflater = LayoutInflater.from(this);
-        addItemView = inflater.inflate(R.layout.dialog_add_item, parentViewGroup);
+        addItemView = inflater.inflate(R.layout.dialog_add_item, parentViewGroup, false);
         addItemDialog = new AlertDialog.Builder(this).setView(addItemView).create();
-        View addStageView = inflater.inflate(R.layout.dialog_add_stage, (ViewGroup) addItemView.getParent());
+        View addStageView = inflater.inflate(R.layout.dialog_add_stage,
+                (ViewGroup) addItemView.getParent(), false);
         addStageDialog = new AlertDialog.Builder(this).setView(addStageView).create();
 
         itemName = (EditText) addItemView.findViewById(R.id.newItemName);
@@ -118,16 +116,6 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                 adapterStrings[i] = foodItemList.get(i).getInfo();
             showItemsLV(adapterStrings);
         }
-
-        String base64PublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAorDc/" +
-                "54H1bPEWKCxT8Qh00lBaacIvXIRUX8K+EAfVaNUpzLNlbbziKbKUAumrasQF+iIff2" +
-                "oslvupLLPCZcG8k4v9ujfPs1g9CGKc8bTYQ47yBI1hIYq6GEoGffpHe+xA0+bQ2ujn" +
-                "rT9g+3E6Dc0TaqfH+O0shw3zwgnh9nRWbb/ebMevgU4h7/tcjx8Omx7S13KxHvnwFJ" +
-                "5lWg8RJPvTKYBVDkUyhfqvYKikux7V5UZmK9fCR4kea/ULwzRf+AsbG7YgVXjQQIMH" +
-                "GmpxWWs1OioXeVR8TbYdRa0aMmp8aUHlnHMhxhlZCUotCrYfjftPhLImm88TPb14tW" +
-                "/nLj5EQIDAQAB";
-        List<String> keyList;
-
 
         //load ad
         if(!BillingClass.isUpgraded) {
@@ -282,9 +270,10 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                             mToast.show();
                         } else {
                             foodItem.setFoodStages(tempFoodItem.getFoodStages());
-                            foodItem.name = itemName.getText().toString();
                             foodItem.totalTime = tempFoodItem.totalTime;
                             foodItem.numStages = tempFoodItem.numStages;
+                            foodItemList.remove(position); //remove old
+                            foodItemList.add(foodItem); //add updated
                             String[] adapterStrings = new String[foodItemList.size()];
                             for (int i = 0; i < foodItemList.size(); i++) {
                                 adapterStrings[i] = foodItemList.get(i).getInfo();
@@ -294,13 +283,15 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                         }
                     }
                 });
+
                 Button delete = (Button) addItemDialog.findViewById(R.id.cancelAddingItemButton);
                 delete.setText(R.string.delete);
                 delete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         new AlertDialog.Builder(ItemScreen.this)
-                                .setTitle("Delete Item '" + foodItem.name + "'?\nThis Cannot be Undone")
+                                .setTitle("Delete Item '" + foodItem.name +
+                                        "'?\nThis Cannot be Undone")
                                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
@@ -333,17 +324,26 @@ public class ItemScreen extends Activity implements View.OnClickListener {
             mToast.setText("Please add at least 1 item first");
             mToast.show();
         } else {
-            View dialogView = View.inflate(this, R.layout.dialog_ready_time, parentViewGroup);
-            final AlertDialog alertDialog = new AlertDialog.Builder(this).setView(dialogView).show();
-
-            final CheckBox reminderCheckBox = (CheckBox) dialogView.findViewById(R.id.notificationSwitch);
+            LayoutInflater inflater = LayoutInflater.from(this);
+            View dialogView = inflater.inflate(R.layout.dialog_ready_time, parentViewGroup, false);
+            if(dialogView.getParent()!=null){
+                ((ViewGroup) dialogView.getParent()).removeView(dialogView);
+            }
+            final AlertDialog alertDialog = new AlertDialog.Builder(this)
+                    .setView(dialogView).show();
+            final CheckBox reminderCheckBox =
+                    (CheckBox) dialogView.findViewById(R.id.notificationSwitch);
             final TextView readyTimeTV = (TextView) dialogView.findViewById(R.id.readyTimeTV);
-            final ScrollView manualSelectSV = (ScrollView) dialogView.findViewById(R.id.manualTimeSelectSV);
-            final TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.readyTimePicker);
-            final DatePicker datePicker = (DatePicker) dialogView.findViewById(R.id.readyDatePicker);
+            final ScrollView manualSelectSV = (
+                    ScrollView) dialogView.findViewById(R.id.manualTimeSelectSV);
+            final TimePicker timePicker =
+                    (TimePicker) dialogView.findViewById(R.id.readyTimePicker);
+            final DatePicker datePicker =
+                    (DatePicker) dialogView.findViewById(R.id.readyDatePicker);
             timePicker.setIs24HourView(true);
             Button getTimingsButton = (Button) dialogView.findViewById(R.id.getTimingsButton);
-            RadioButton manualSelect = (RadioButton) dialogView.findViewById(R.id.manualTimeSelectRB);
+            RadioButton manualSelect =
+                    (RadioButton) dialogView.findViewById(R.id.manualTimeSelectRB);
             final RadioButton earliestSelect = (RadioButton) dialogView.findViewById(R.id.ASAP_RB);
 
             readyTimeTV.setText(String.format(Locale.getDefault()," %02d:%02d",
@@ -475,6 +475,8 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                 });
             }
         }
+        else Toast.makeText(this, "Please upgrade to unlock this feature",
+                Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -532,16 +534,17 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         public View getView(int position, View convertView, ViewGroup parent) {
             LayoutInflater inflater = LayoutInflater.from(getContext());
             if (convertView == null) {
-                convertView = inflater.inflate(R.layout.lv_food_item, parentViewGroup);
+                convertView = inflater.inflate(R.layout.lv_food_item, parent, false);
             }
 
             String[] info = getItem(position).split("\\|");
-            TextView name = (TextView) convertView.findViewById(R.id.itemNameTV);
-            TextView stages = (TextView) convertView.findViewById(R.id.itemStagesTV);
-            TextView time = (TextView) convertView.findViewById(R.id.itemTimeTV);
-            name.setText(info[0]);
-            stages.setText(info[2]);
-            time.setText(String.format("%s mins", info[1]));
+            TextView nameTV = (TextView) convertView.findViewById(R.id.itemNameTV);
+            TextView stagesTV = (TextView) convertView.findViewById(R.id.itemStagesTV);
+            TextView timeTV = (TextView) convertView.findViewById(R.id.itemTimeTV);
+            Log.d("db", "NAME: " + info[0]);
+            nameTV.setText(String.valueOf(info[0]));
+            stagesTV.setText(info[2]);
+            timeTV.setText(String.format("%s mins", info[1]));
 
             return convertView;
         }
@@ -652,7 +655,8 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                         case DragEvent.ACTION_DRAG_EXITED:
                             //go straight into ACTION_DROP case (resize view to original size)
                         case DragEvent.ACTION_DROP:
-                            v.setLayoutParams(new AbsListView.LayoutParams(v.getWidth(), v.getHeight()/2));
+                            v.setLayoutParams(new AbsListView.LayoutParams(
+                                    v.getWidth(), v.getHeight()/2));
                             break;
                         case DragEvent.ACTION_DRAG_ENDED:
                             //update list view if drop valid (inside list view)

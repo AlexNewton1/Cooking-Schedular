@@ -13,8 +13,9 @@
     <string name="get_recent_timings">Show Recent Timings</string>
     <string name="upgrade_to_pro">Upgrade To Pro</string>
     <string name="show_saved_meals_menu_item">Show Saved Meals</string>
-    <string name="load_or_view_meal">Load/View Saved Meal</string>
+    <string name="load_saved_meal">Load Saved Meal</string>
     <string name="logo">Application logo</string>
+    <string name="upgrade_to_unlock">Please upgrade to unlock this feature</string>
 
 
     <!--......................................ADD ITEM SCREEN STRINGS........................................................-->
@@ -40,6 +41,9 @@
     <string name="lv_stage_no">Number</string>
     <string name="cont">Continue</string>
     <string name="reorder_handler">image to handle drag events to reorder list view items</string>
+    <string name="add_cooking_times">Add Cooking Times</string>
+    <string name="name">Name</string>
+    <string name="total_time">Total Time</string>
 
 
     <!-- .................................CHOOSE READY TIME DIALOG STRINGS.................................................-->
@@ -50,6 +54,7 @@
     <string name="manual_time_select">Manually Choose a Time</string>
     <string name="reminders">Reminders</string>
     <string name="showTimings">Show Times</string>
+    <string name="override_warning">Continuing will override previous meal timings\n(reminders unaffected)</string>
 
     <!--..........................................TIMINGS PAGE STRINGS.......................................................-->
     <string name="timing_screen_banner_ad">ca-app-pub-3940256099942544/6300978111</string> <!--TODO - CHANGE TO PROPER AD ID -->
@@ -59,6 +64,7 @@
     <string name="save_meal">Save Meal</string>
     <string name="meal_notes_hint">Notes (e.g recipe book / oven temperature)</string>
     <string name="meal_name_hint">Meal Name</string>
+    <string name="finished">Finished</string>
 
 
     <!--............................................UPDATE PAGE STRINGS........................................................-->

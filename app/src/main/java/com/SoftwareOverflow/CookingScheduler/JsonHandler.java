@@ -28,7 +28,8 @@ public class JsonHandler {
      * @return - list of NotificationClass objects saved in sharedPrefs (contains alarm times etc)
      */
     public static List<NotificationClass> getAlarmList(Context c){
-        SharedPreferences sp = c.getApplicationContext().getSharedPreferences("alarms", Context.MODE_PRIVATE);
+        SharedPreferences sp = c.getApplicationContext()
+                .getSharedPreferences("alarms", Context.MODE_PRIVATE);
         String infoString = sp.getString("alarmInfo", "");
         List<NotificationClass> alarmList = new ArrayList<>();
 
@@ -53,7 +54,8 @@ public class JsonHandler {
      * @param alarmList - List of NotificationClass objects to be saved in SharedPreferences
      */
     public static void putAlarmList(Context c, List<NotificationClass> alarmList){
-        SharedPreferences sp = c.getApplicationContext().getSharedPreferences("alarms", Context.MODE_PRIVATE);
+        SharedPreferences sp = c.getApplicationContext()
+                .getSharedPreferences("alarms", Context.MODE_PRIVATE);
         StringBuilder sb = new StringBuilder();
         for(NotificationClass alarm: alarmList) sb.append(gson.toJson(alarm)).append("|||");
         sp.edit().putString("alarmInfo", sb.toString()).apply();
@@ -89,7 +91,8 @@ public class JsonHandler {
 
     /*
     public static void putFoodItemList(Context c, List<FoodItem> foodItems){
-        SharedPreferences sp = c.getApplicationContext().getSharedPreferences("foods", Context.MODE_PRIVATE);
+        SharedPreferences sp = c.getApplicationContext()
+            .getSharedPreferences("foods", Context.MODE_PRIVATE);
         StringBuilder sb = new StringBuilder();
         for(FoodItem food: foodItems) sb.append(gson.toJson(food)).append("|||");
         sp.edit().putString("foodInfo", sb.toString()).apply();

@@ -45,7 +45,8 @@ public class ShowTimes extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_times);
         //force portrait mode for phones
-        if (getResources().getBoolean(R.bool.portrait_only)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+        if (getResources().getBoolean(R.bool.portrait_only))
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
 
 
         mealDatabase = new MealDatabase(this, null);
@@ -56,20 +57,23 @@ public class ShowTimes extends Activity {
 
 
         //preparing String array for listView & reminders
-        Map<Integer, String> map = new TreeMap<>(); //holds information in the form  EffectiveTimeForReminder --> foodItemName|stageName|stageTime
+        //Maps  EffectiveTimeForReminder --> foodItemName|stageName|stageTime
+        Map<Integer, String> map = new TreeMap<>();
         for(FoodItem aFoodItem : foodItemList){
             List<String> currentFoodItemStages = aFoodItem.getFoodStages();
             int effectiveTotalTime = 0;
             for(int i=currentFoodItemStages.size()-1; i>=0;  i--){
                 String[] foodStageString= currentFoodItemStages.get(i).split("\\|");
                 effectiveTotalTime += Integer.parseInt(foodStageString[1]);
-                map.put(effectiveTotalTime, aFoodItem.name + "|" + foodStageString[0] + "|" + foodStageString[1] + "|" + effectiveTotalTime);
+                map.put(effectiveTotalTime, aFoodItem.name + "|" + foodStageString[0] + "|"
+                        + foodStageString[1] + "|" + effectiveTotalTime);
             }
         }
         String[] stageInfo = map.values().toArray(new String[map.values().size()]);
 
         TextView readyTimeTV = (TextView) findViewById(R.id.readyTimeTV);
-        readyTimeTV.setText(String.format(Locale.getDefault(), "%02d:%02d", readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));
+        readyTimeTV.setText(String.format(Locale.getDefault(), "%02d:%02d",
+                readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));
         if(extras.getBoolean("reminders")) setReminders(readyTimeCal, stageInfo);
         showListView(stageInfo);
 
@@ -104,7 +108,8 @@ public class ShowTimes extends Activity {
             alarmCal.setTimeInMillis(readyTimeCal.getTimeInMillis());
             alarmCal.add(Calendar.MINUTE, -time);
 
-            NotificationClass alarm = new NotificationClass(time, alarmCal.getTimeInMillis(), name, (int) System.currentTimeMillis());
+            NotificationClass alarm = new NotificationClass(time, alarmCal.getTimeInMillis(),
+                    name, (int) System.currentTimeMillis());
             alarmList.add(alarm);
 
             PendingIntent pi = createPendingIntent(getApplicationContext(), alarm);
@@ -118,7 +123,8 @@ public class ShowTimes extends Activity {
         Intent alarmIntent = new Intent(c.getApplicationContext(), NotificationReceiver.class);
         alarmIntent.putExtra("name", alarm.name);
         alarmIntent.putExtra("id", alarm.id);
-        return PendingIntent.getBroadcast(c.getApplicationContext(), alarm.id, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
+        return PendingIntent.getBroadcast(c.getApplicationContext(),
+                alarm.id, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
     }
 
     public static void cancelPendingIntent(final int id, final Context context, boolean showToast){
@@ -137,7 +143,8 @@ public class ShowTimes extends Activity {
 
         JsonHandler.putAlarmList(context.getApplicationContext(), alarmList);
         if(showToast) {
-            if (!success) Toast.makeText(context, "Error Deleting Reminder", Toast.LENGTH_SHORT).show();
+            if (!success) Toast.makeText(context, "Error Deleting Reminder",
+                    Toast.LENGTH_SHORT).show();
             else Toast.makeText(context, "Reminder Deleted", Toast.LENGTH_SHORT).show();
         }
     }
@@ -153,41 +160,46 @@ public class ShowTimes extends Activity {
     public static Calendar getReadyTimeCal(){return readyTimeCal;}
 
     public void saveMeal(View view){
-        //TODO - check if free/upgraded
+        if(BillingClass.isUpgraded) {
+            LayoutInflater inflater = LayoutInflater.from(this);
+            View v = inflater.inflate(R.layout.dialog_save_meal,
+                    (ViewGroup) view.getRootView(), false);
+            final AlertDialog dialog = new AlertDialog.Builder(this).setView(v).show();
 
-        LayoutInflater inflater = LayoutInflater.from(this);
-        View v = inflater.inflate(R.layout.dialog_save_meal, null);
-        final AlertDialog dialog = new AlertDialog.Builder(this).setView(v).show();
-
-        final EditText mealName = (EditText) v.findViewById(R.id.mealNameET);
-        final EditText mealNotes = (EditText) v.findViewById(R.id.mealNotesET);
+            final EditText mealName = (EditText) v.findViewById(R.id.mealNameET);
+            final EditText mealNotes = (EditText) v.findViewById(R.id.mealNotesET);
 
 
-        Button save = (Button) v.findViewById(R.id.saveMealButton);
-        Button cancel = (Button) v.findViewById(R.id.cancelSavingMealButton);
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String name = mealName.getText().toString();
-                String notes = mealNotes.getText().toString();
+            Button save = (Button) v.findViewById(R.id.saveMealButton);
+            Button cancel = (Button) v.findViewById(R.id.cancelSavingMealButton);
+            save.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String name = mealName.getText().toString();
+                    String notes = mealNotes.getText().toString();
 
-                if (!name.equals("")) {
-                    String jsonString = JsonHandler.getFoodItemJsonString(foodItemList);
-                    mealDatabase.addMeal(name, jsonString, notes, -1);
-                } else
-                    Toast.makeText(ShowTimes.this, "Please enter a name for the meal", Toast.LENGTH_SHORT).show();
-            }
-        });
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
+                    if (!name.equals("")) {
+                        String jsonString = JsonHandler.getFoodItemJsonString(foodItemList);
+                        mealDatabase.addMeal(name, jsonString, notes, -1);
+                    } else
+                        Toast.makeText(ShowTimes.this, "Please enter a name for the meal",
+                                Toast.LENGTH_SHORT).show();
+                }
+            });
+            cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+        }
+        else Toast.makeText(this, getString(R.string.upgrade_to_unlock),
+                Toast.LENGTH_SHORT).show();
     }
 
     public void finished(View v){
-        final Intent i = new Intent(this, HomeScreen.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        final Intent i = new Intent(this, HomeScreen.class)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         if(interstitialAd != null && interstitialAd.isLoaded()){
             interstitialAd.setAdListener(new AdListener() {
                 @Override
@@ -216,7 +228,8 @@ public class ShowTimes extends Activity {
         long readyTimeMillis = readyTimeCal.getTimeInMillis();
 
         SharedPreferences sharedPrefs = getSharedPreferences("foodItems", MODE_PRIVATE);
-        sharedPrefs.edit().putString("jsonString", jsonString ).putLong("readyTime", readyTimeMillis).apply();
+        sharedPrefs.edit().putString("jsonString", jsonString )
+                .putLong("readyTime", readyTimeMillis).apply();
         super.onDestroy();
     }
 
@@ -232,25 +245,26 @@ public class ShowTimes extends Activity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = LayoutInflater.from(ShowTimes.this);
-            View customView = inflater.inflate(R.layout.lv_show_times, null);
+            if(convertView == null) {
+                LayoutInflater inflater = LayoutInflater.from(ShowTimes.this);
+                convertView = inflater.inflate(R.layout.lv_show_times, parent, false);
 
-            String[] info = getItem(length-position-1).split("\\|");
-            int effectiveTotalTime = Integer.parseInt(info[3]);
+                String[] info = getItem(length - position - 1).split("\\|");
+                int effectiveTotalTime = Integer.parseInt(info[3]);
 
-            TextView startTime = (TextView) customView.findViewById(R.id.startTimeTV);
-            TextView startItem = (TextView) customView.findViewById(R.id.startItemTV);
+                TextView startTime = (TextView) convertView.findViewById(R.id.startTimeTV);
+                TextView startItem = (TextView) convertView.findViewById(R.id.startItemTV);
 
-            Calendar readyTimeCal = Calendar.getInstance();
-            readyTimeCal.setTime(ShowTimes.getReadyTimeCal().getTime());
-            readyTimeCal.add(Calendar.MINUTE, -effectiveTotalTime);
+                Calendar readyTimeCal = Calendar.getInstance();
+                readyTimeCal.setTime(ShowTimes.getReadyTimeCal().getTime());
+                readyTimeCal.add(Calendar.MINUTE, -effectiveTotalTime);
 
-            startItem.setText(String.format(Locale.getDefault(), "%s - %s \n(%s mins)",
-                    info[0], info[1], info[2]));
-            startTime.setText(String.format(Locale.getDefault(), "%02d:%02d",
-                    readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));
-
-            return customView;
+                startItem.setText(String.format(Locale.getDefault(), "%s - %s \n(%s mins)",
+                        info[0], info[1], info[2]));
+                startTime.setText(String.format(Locale.getDefault(), "%02d:%02d",
+                        readyTimeCal.get(Calendar.HOUR_OF_DAY), readyTimeCal.get(Calendar.MINUTE)));
+            }
+            return convertView;
         }
     }
 

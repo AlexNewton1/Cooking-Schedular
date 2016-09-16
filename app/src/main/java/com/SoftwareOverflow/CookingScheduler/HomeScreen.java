@@ -34,17 +34,17 @@ import java.util.Locale;
 
 public class HomeScreen extends Activity implements Dialog.OnClickListener {
 
-    //TODO - add in app billing for pro version (ad free & save meals)
-
     private Toast mToast;
     public static int screenHeight;
     protected static BillingClass billing;
+    private ViewGroup parentViewGroup = null;
 
     @Override
     @SuppressLint("ShowToast")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_screen);
+        parentViewGroup = (ViewGroup) findViewById(R.id.activity_home_screen);
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -65,23 +65,24 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
     public void createMeal(View v) {
         startActivity(new Intent(this, ItemScreen.class));
     }
-    public void getTimings(View v){
+
+    public void getTimings(View v) {
         SharedPreferences sharedPrefs = getSharedPreferences("foodItems", MODE_PRIVATE);
         String jsonString = sharedPrefs.getString("jsonString", "");
         Long readyTimeMillis = sharedPrefs.getLong("readyTime", 0);
 
-        if(!jsonString.matches("") && readyTimeMillis!=0) {
+        if (!jsonString.matches("") && readyTimeMillis != 0) {
             Calendar readyTimeCal = Calendar.getInstance();
             readyTimeCal.setTimeInMillis(readyTimeMillis);
             startActivity(new Intent(this, ShowTimes.class).putExtra("readyTimeCal", readyTimeCal).putExtra("jsonString", jsonString));
-        }
-        else {
+        } else {
             mToast.setText("No previous timings found.");
             mToast.show();
         }
     }
-    public void loadMeal(View v){
-        if(BillingClass.isUpgraded) { //upgraded => can save meals
+
+    public void loadMeal(View v) {
+        if (BillingClass.isUpgraded) { //upgraded => can save meals
             MealDatabase mealDB = new MealDatabase(HomeScreen.this, null);
             if (mealDB.getRowNum() != 0)
                 startActivity(new Intent(HomeScreen.this, SavedMeals.class));
@@ -89,9 +90,8 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                 mToast.setText("No Saved Meals");
                 mToast.show();
             }
-        }
-        else {
-            mToast.setText("Please upgrade to unlock this feature");
+        } else {
+            mToast.setText(getString(R.string.upgrade_to_unlock));
             mToast.show();
         }
 
@@ -102,7 +102,7 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
         Collections.sort(alarmList);
 
         if (alarmList.size() > 0) {
-            View dialogView = View.inflate(this, R.layout.dialog_reminders, null);
+            View dialogView = View.inflate(this, R.layout.dialog_reminders, parentViewGroup);
             ListView alarmListView = (ListView) dialogView.findViewById(R.id.alarmListView);
             final String[] adapterStrings = new String[alarmList.size()];
             for (int i = 0; i < alarmList.size(); i++) {
@@ -110,10 +110,12 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
             }
             ListAdapter adapter = new AdapterReminders(this, adapterStrings);
             alarmListView.setAdapter(adapter);
-            final AlertDialog alertDialog = new AlertDialog.Builder(this).setView(dialogView).show();
+            final AlertDialog alertDialog = new AlertDialog.Builder(this)
+                    .setView(dialogView).show();
 
             Button cancelButton = (Button) alertDialog.findViewById(R.id.cancelRemindersButton);
-            Button deleteAllButton = (Button) alertDialog.findViewById(R.id.deleteAllRemindersButton);
+            Button deleteAllButton =
+                    (Button) alertDialog.findViewById(R.id.deleteAllRemindersButton);
             deleteAllButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -132,11 +134,11 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                                     showUpcomingReminders();
                                 }
                             }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            }).show();
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
                 }
             });
             cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -186,7 +188,6 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
     protected void onResume() {
         super.onResume();
         billing.setContext(this);
-        billing.queryInventory();
     }
 
     @Override
@@ -194,11 +195,13 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
         mToast.cancel();
         super.onPause();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_home_screen, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -217,11 +220,11 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
 
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     public void onClick(DialogInterface dialog, int which) {
         dialog.dismiss();
     }
-
 
 
     private class AdapterReminders extends ArrayAdapter<String> {
@@ -231,22 +234,25 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            View customView = inflater.inflate(R.layout.lv_reminders, null);
+            if (convertView == null) {
+                LayoutInflater inflater = LayoutInflater.from(getContext());
 
-            TextView nameTV = (TextView) customView.findViewById(R.id.upcomingReminderItemTV);
-            TextView timeTV = (TextView) customView.findViewById(R.id.upcomingReminderTimeTV);
+                convertView = inflater.inflate(R.layout.lv_reminders, parent, false);
 
-            String[] info = getItem(position).split("\\|");
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(Long.parseLong(info[1]));
+                TextView nameTV = (TextView) convertView.findViewById(R.id.upcomingReminderItemTV);
+                TextView timeTV = (TextView) convertView.findViewById(R.id.upcomingReminderTimeTV);
 
-            nameTV.setText(info[0]);
-            timeTV.setText(String.format(Locale.getDefault(), "%02d-%02d-%04d at %02d:%02d",
-                    cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR),
-                    cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)));
+                String[] info = getItem(position).split("\\|");
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(Long.parseLong(info[1]));
 
-            return customView;
+                nameTV.setText(info[0]);
+                timeTV.setText(String.format(Locale.getDefault(), "%02d-%02d-%04d at %02d:%02d",
+                        cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH),
+                        cal.get(Calendar.YEAR), cal.get(Calendar.HOUR_OF_DAY),
+                        cal.get(Calendar.MINUTE)));
+            }
+            return convertView;
         }
     }
 }

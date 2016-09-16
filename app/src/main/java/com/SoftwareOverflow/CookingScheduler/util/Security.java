@@ -19,8 +19,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
-import com.SoftwareOverflow.CookingScheduler.BuildConfig;
-
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -57,7 +55,7 @@ public class Security {
         if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey) ||
                 TextUtils.isEmpty(signature)) {
             Log.e(TAG, "Purchase verification failed: missing data.");
-            return BuildConfig.DEBUG;
+            return false;
         }
 
         PublicKey key = Security.generatePublicKey(base64PublicKey);
@@ -120,8 +118,4 @@ public class Security {
         return false;
     }
 
-    public static boolean verifyDeveloperPayload(String payloadString) {
-        //TODO -- create method of verifying palyload string
-        return false;
-    }
 }

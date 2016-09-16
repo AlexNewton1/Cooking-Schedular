@@ -15,6 +15,9 @@ public class BillingClass extends Activity implements IabBroadcastReceiver.IabBr
     private Context context;
     private IabHelper mHelper;
     private final String UPGRADE_SKU = "pro_version_upgrade";
+    private final String TEST_SKU = "com.example.product";
+
+
     private IabBroadcastReceiver mBroadcastReceiver;
     private IabHelper.QueryInventoryFinishedListener mGotInventoryListener;
 
@@ -36,10 +39,10 @@ public class BillingClass extends Activity implements IabBroadcastReceiver.IabBr
             public void onQueryInventoryFinished(IabResult result, Inventory inv) {
                 if(mHelper != null){
                     if(result.isFailure()){
-                        showAlert("Failed to query inventory: " + result);
+                        showAlert("Failed to query inventory.\n" + result.getMessage());
                     }
                     else{ //check for items we own
-                        Purchase upgradePurchase = inv.getPurchase(UPGRADE_SKU);
+                        Purchase upgradePurchase = inv.getPurchase(TEST_SKU);
                         isUpgraded = (upgradePurchase!=null);
                     }
 
@@ -103,27 +106,28 @@ public class BillingClass extends Activity implements IabBroadcastReceiver.IabBr
 
         final int RC_REQUEST = 10001; //arbitrary request code for purchase flow
         try{
-            mHelper.launchPurchaseFlow(activity, UPGRADE_SKU, RC_REQUEST, new IabHelper.OnIabPurchaseFinishedListener() {
+            mHelper.launchPurchaseFlow(activity, TEST_SKU, RC_REQUEST, new IabHelper.OnIabPurchaseFinishedListener() {
                 @Override
                 public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+                    Log.d("IAB", "mHelper null: " + (mHelper == null));
+                    Log.d("IAB", "success: " + result.isSuccess());
                     if(mHelper != null){
                         mHelper.flagEndAsync();
-
                         if(result.isSuccess()){
                             Log.d("IAB", "Successful purchase!");
-                            if(purchase.getSku().equals(UPGRADE_SKU)) {
+                            if(purchase.getSku().equals(TEST_SKU)) {
                                 isUpgraded = true;
                                 showAlert("Thank you for upgrading to premium!");
                             }
                         }
-                        else showAlert("Problem Purchasing: " + result);
+                        else showAlert(result.getMessage());
 
                     }
                 }
             }, payloadString);
         } catch (IabHelper.IabAsyncInProgressException e){
             e.printStackTrace();
-            showAlert("Problem Purchasing Item (Exception caught)");
+            showAlert("Problem Purchasing Item");
         }
     }
 
@@ -136,7 +140,7 @@ public class BillingClass extends Activity implements IabBroadcastReceiver.IabBr
     }
 
     public void dispose() {
-        if(mBroadcastReceiver!=null) unregisterReceiver(mBroadcastReceiver);
+        if(mBroadcastReceiver!=null) context.unregisterReceiver(mBroadcastReceiver);
         if (mHelper != null) {
             mHelper.disposeWhenFinished();
             mHelper = null;

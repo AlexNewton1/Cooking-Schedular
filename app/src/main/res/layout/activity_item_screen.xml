@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="0dp"
-    tools:context=".TimerScreen">
+    android:id="@+id/activity_item_screen"
+    tools:context="com.SoftwareOverflow.CookingScheduler.ItemScreen">
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/itemScreenBannerAd"
@@ -24,7 +25,7 @@
 
             <TextView
                 style="@style/title"
-                android:text="Add Cooking Times" />
+                android:text="@string/add_cooking_times" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -50,7 +51,7 @@
 
             <TextView
                 android:layout_weight="2"
-                android:text="Name"
+                android:text="@string/name"
                 android:gravity="center"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -64,7 +65,7 @@
 
             <TextView
                 android:layout_weight="1"
-                android:text="Stages"
+                android:text="@string/stages"
                 android:gravity="center"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -79,7 +80,7 @@
             <TextView
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Total Time"
+                android:text="@string/total_time"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textSize="15sp"

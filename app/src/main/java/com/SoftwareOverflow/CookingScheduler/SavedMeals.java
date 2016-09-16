@@ -121,11 +121,12 @@ public class SavedMeals extends Activity {
         }
 
         @Override
-        public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        public View getGroupView(int groupPosition, boolean isExpanded,
+                                 View convertView, ViewGroup parent) {
             if(convertView == null){
                 LayoutInflater layoutInflater =
                         (LayoutInflater) this.context.getSystemService(LAYOUT_INFLATER_SERVICE);
-                convertView = layoutInflater.inflate(R.layout.lv_saved_meals, null);
+                convertView = layoutInflater.inflate(R.layout.lv_saved_meals, parent, false);
             }
 
             TextView titleTV = (TextView) convertView.findViewById(R.id.savedMealName);
@@ -152,10 +153,13 @@ public class SavedMeals extends Activity {
         }
 
         @Override
-        public View getChildView(final int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+        public View getChildView(final int groupPosition, int childPosition,
+                                 boolean isLastChild, View convertView, ViewGroup parent) {
             if(convertView == null){
-                LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(LAYOUT_INFLATER_SERVICE);
-                convertView = layoutInflater.inflate(R.layout.lv_saved_meals_expandable_button_bar, null);
+                LayoutInflater layoutInflater =
+                        (LayoutInflater) this.context.getSystemService(LAYOUT_INFLATER_SERVICE);
+                convertView = layoutInflater.inflate(
+                        R.layout.lv_saved_meals_expandable_button_bar, parent, false);
             }
 
             Button loadButton = (Button) convertView.findViewById(R.id.loadSavedMeal);
