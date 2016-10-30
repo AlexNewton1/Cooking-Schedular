@@ -1,27 +1,35 @@
 {
   "project_info": {
-    "project_number": "809851404357",
-    "firebase_url": "https://cooking-scheduler.firebaseio.com",
-    "project_id": "cooking-scheduler",
-    "storage_bucket": "cooking-scheduler.appspot.com"
+    "project_number": "141802222650",
+    "firebase_url": "https://cooking-scheduler-f7d8c.firebaseio.com",
+    "project_id": "cooking-scheduler-f7d8c",
+    "storage_bucket": "cooking-scheduler-f7d8c.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:809851404357:android:c979a2513a4d3025",
+        "mobilesdk_app_id": "1:141802222650:android:c979a2513a4d3025",
         "android_client_info": {
           "package_name": "com.softwareoverflow.cookingtimer"
         }
       },
       "oauth_client": [
         {
-          "client_id": "809851404357-g5ijv44iiubopivgj1jfitror8ihujuj.apps.googleusercontent.com",
+          "client_id": "141802222650-us5u53s2481p9qs22pcfkg8v9s0tv0ij.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.softwareoverflow.cookingtimer",
+            "certificate_hash": "70FA48D9A84AB9B312AA940325477DC6E18830E2"
+          }
+        },
+        {
+          "client_id": "141802222650-eb8kda7atjfn8t14g7qd9uc84f6sf7rm.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBy6nPOsC1VfIR0h7djSI2TdJPtZiMH16g"
+          "current_key": "AIzaSyDrzzUFzajKe2WgDVlbwDpU8gg1w5vzjwI"
         }
       ],
       "services": {
@@ -29,8 +37,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "141802222650-eb8kda7atjfn8t14g7qd9uc84f6sf7rm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2

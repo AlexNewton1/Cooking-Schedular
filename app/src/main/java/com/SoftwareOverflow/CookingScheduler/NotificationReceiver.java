@@ -34,7 +34,7 @@ public class NotificationReceiver extends BroadcastReceiver {
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setWhen(System.currentTimeMillis())
                 .setContentIntent(getNotificationIntent(context))
-                .setSmallIcon(R.drawable.launcher).build();
+                .setSmallIcon(R.drawable.icon).build();
 
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

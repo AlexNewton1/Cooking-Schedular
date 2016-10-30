@@ -5,8 +5,8 @@
     android:layout_marginLeft="0dp"
     android:layout_marginRight="0dp"
     android:gravity="center"
-    android:id="@+id/show_times_layout"
-    android:weightSum="10">
+    android:weightSum="10"
+    android:background="@android:color/darker_gray" >
 
     <TextView
         android:id="@+id/startTimeTV"

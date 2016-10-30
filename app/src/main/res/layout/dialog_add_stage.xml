@@ -2,21 +2,29 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_gravity="center_horizontal"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:layout_margin="0dp"
+    app:theme="@style/AppTheme">
 
     <LinearLayout
+        android:layout_marginTop="16dp"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:weightSum="10">
 
         <EditText
             android:gravity="center"
             android:id="@+id/stageNameET"
             android:maxLength="100"
-            android:layout_width="200dp"
+            android:textColor="@android:color/black"
+            android:layout_width="0dp"
+            android:layout_weight="8"
             android:layout_height="wrap_content"
+            android:textSize="18sp"
             android:hint="@string/stage_name" />
 
         <EditText
@@ -25,9 +33,10 @@
             android:inputType="number"
             android:maxLength="3"
             android:id="@+id/stageTimeET"
-            android:layout_width="50dp"
+            android:layout_width="0dp"
+            android:layout_weight="2"
             android:layout_height="wrap_content"
-            android:hint="@string/time" />
+            android:hint="@string/minutes" />
 
     </LinearLayout>
 

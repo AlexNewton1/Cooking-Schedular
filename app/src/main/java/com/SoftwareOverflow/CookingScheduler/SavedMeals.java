@@ -147,7 +147,7 @@ public class SavedMeals extends Activity {
             numStagesTV.setText(String.format(Locale.getDefault(),
                     "%d items - %d stages", foodItemList.size(), numStages));
             totalTimeTV.setText(String.format(Locale.getDefault(),
-                    "%d", foodItemList.get(0).totalTime));
+                    "%d " + getString(R.string.minutes), foodItemList.get(0).totalTime));
 
             return convertView;
         }
@@ -202,7 +202,7 @@ public class SavedMeals extends Activity {
             return true;
         }
 
-        public void loadSavedMeal(int groupPosition){
+        private void loadSavedMeal(int groupPosition){
             String[] savedInfo = adapterStrings[groupPosition].split("\\|\\*\\|");
             String mealName = savedInfo[0], jsonString = savedInfo[1], notes = savedInfo[2];
             int mealID = mealDB.getIdFromName(mealName);

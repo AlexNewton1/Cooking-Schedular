@@ -2,7 +2,6 @@ package com.SoftwareOverflow.CookingScheduler;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -19,7 +18,7 @@ import java.util.List;
  * All methods static for use without creating object first
  * All json strings delimited with triple pipe character (|||)
  */
-public class JsonHandler {
+class JsonHandler {
 
     private static Gson gson = new Gson();
 
@@ -27,7 +26,7 @@ public class JsonHandler {
      * @param c - context
      * @return - list of NotificationClass objects saved in sharedPrefs (contains alarm times etc)
      */
-    public static List<NotificationClass> getAlarmList(Context c){
+     static List<NotificationClass> getAlarmList(Context c){
         SharedPreferences sp = c.getApplicationContext()
                 .getSharedPreferences("alarms", Context.MODE_PRIVATE);
         String infoString = sp.getString("alarmInfo", "");
@@ -53,7 +52,7 @@ public class JsonHandler {
      * @param c - context
      * @param alarmList - List of NotificationClass objects to be saved in SharedPreferences
      */
-    public static void putAlarmList(Context c, List<NotificationClass> alarmList){
+    static void putAlarmList(Context c, List<NotificationClass> alarmList){
         SharedPreferences sp = c.getApplicationContext()
                 .getSharedPreferences("alarms", Context.MODE_PRIVATE);
         StringBuilder sb = new StringBuilder();
@@ -61,7 +60,7 @@ public class JsonHandler {
         sp.edit().putString("alarmInfo", sb.toString()).apply();
     }
 
-    public static List<FoodItem> getFoodItemList(Context c, String jsonString){
+    static List<FoodItem> getFoodItemList(Context c, String jsonString){
         Type foodType = new TypeToken<FoodItem>(){}.getType();
         List<FoodItem> foodItemList = new ArrayList<>();
 
@@ -75,27 +74,16 @@ public class JsonHandler {
 
         }
         catch (JsonSyntaxException ex){
-            Log.e("json", jsonString);
-            Log.e("json", ex.toString());
             Toast.makeText(c, "Error loading values", Toast.LENGTH_SHORT).show();
         }
 
         return foodItemList;
     }
 
-    public static String getFoodItemJsonString(List<FoodItem> foodItemList){
+    static String getFoodItemJsonString(List<FoodItem> foodItemList){
         StringBuilder sb = new StringBuilder();
         for (FoodItem food: foodItemList) sb.append(gson.toJson(food)).append("|||");
         return sb.toString();
     }
 
-    /*
-    public static void putFoodItemList(Context c, List<FoodItem> foodItems){
-        SharedPreferences sp = c.getApplicationContext()
-            .getSharedPreferences("foods", Context.MODE_PRIVATE);
-        StringBuilder sb = new StringBuilder();
-        for(FoodItem food: foodItems) sb.append(gson.toJson(food)).append("|||");
-        sp.edit().putString("foodInfo", sb.toString()).apply();
-    }
-    */
 }

@@ -7,25 +7,24 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:weightSum="10"
     tools:context="com.SoftwareOverflow.CookingScheduler.HomeScreen"
+    android:weightSum="10"
     android:id="@+id/activity_home_screen">
 
     <ImageView
         android:contentDescription="@string/logo"
         android:id="@+id/homeScreenImageView"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_weight="10"
         android:layout_gravity="center_horizontal"
         android:layout_margin="20dp"
-        android:layout_weight="9"
-        android:src="@drawable/launcher" />
+        android:src="@drawable/icon" />
 
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="0.75"
         android:gravity="center"
         android:orientation="vertical"
         android:layout_gravity="center_horizontal">

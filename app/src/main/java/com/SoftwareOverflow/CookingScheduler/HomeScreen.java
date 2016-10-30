@@ -9,9 +9,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.graphics.Point;
 import android.os.Bundle;
-import android.view.Display;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,7 +25,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.SoftwareOverflow.CookingScheduler.util.BillingClass;
+import com.google.android.gms.ads.MobileAds;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -44,25 +45,26 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_screen);
-        parentViewGroup = (ViewGroup) findViewById(R.id.activity_home_screen);
 
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        screenHeight = size.y;
+        parentViewGroup = (ViewGroup) findViewById(R.id.activity_home_screen);
 
         //force portrait for phones
         if (getResources().getBoolean(R.bool.portrait_only))
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
 
-        mToast = Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT);
+        mToast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
+        MobileAds.initialize(this, getString(R.string.admob_app_id));
 
-        billing = new BillingClass(this);
-
+        setupBilling(this);
     }
 
+    protected static void setupBilling(Context c) {
+        billing = new BillingClass(c);
+    }
 
     public void createMeal(View v) {
+        SharedPreferences sp = getSharedPreferences("currentItems", MODE_PRIVATE);
+        sp.edit().putString("currentItems", "").apply();
         startActivity(new Intent(this, ItemScreen.class));
     }
 
@@ -102,7 +104,8 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
         Collections.sort(alarmList);
 
         if (alarmList.size() > 0) {
-            View dialogView = View.inflate(this, R.layout.dialog_reminders, parentViewGroup);
+            LayoutInflater inflater = getLayoutInflater();
+            View dialogView = inflater.inflate(R.layout.dialog_reminders, parentViewGroup, false);
             ListView alarmListView = (ListView) dialogView.findViewById(R.id.alarmListView);
             final String[] adapterStrings = new String[alarmList.size()];
             for (int i = 0; i < alarmList.size(); i++) {
@@ -121,24 +124,24 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                 public void onClick(View v) {
                     new AlertDialog.Builder(HomeScreen.this)
                             .setTitle("Delete All Reminders?\nThis Can't Be Undone")
-                            .setNegativeButton("Cancel", HomeScreen.this)
                             .setPositiveButton("Delete All Reminders", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     for (NotificationClass alarm : alarmList) {
                                         ShowTimes.cancelPendingIntent(
-                                                alarm.id, getApplicationContext(), false);
+                                                alarm.id, HomeScreen.this, false);
                                     }
                                     dialog.dismiss();
                                     alertDialog.dismiss();
                                     showUpcomingReminders();
                                 }
-                            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).show();
+                            })
+                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }).show();
                 }
             });
             cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -165,7 +168,7 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                                 public void onClick(DialogInterface dialog, int which) {
                                     NotificationClass alarm = alarmList.get(position);
                                     ShowTimes.cancelPendingIntent(
-                                            alarm.id, getApplicationContext(), true);
+                                            alarm.id, HomeScreen.this, true);
                                     alertDialog.dismiss();
                                     showUpcomingReminders();
                                     dialog.dismiss();
@@ -181,19 +184,9 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        billing.dispose();
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        billing.setContext(this);
-    }
-
-    @Override
-    protected void onPause() {
         mToast.cancel();
-        super.onPause();
+        billing.dispose();
     }
 
     @Override
@@ -228,12 +221,13 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
 
 
     private class AdapterReminders extends ArrayAdapter<String> {
-        public AdapterReminders(Context context, String[] adapterStrings) {
+        AdapterReminders(Context context, String[] adapterStrings) {
             super(context, R.layout.lv_reminders, adapterStrings);
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        @NonNull
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             if (convertView == null) {
                 LayoutInflater inflater = LayoutInflater.from(getContext());
 
@@ -242,15 +236,16 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                 TextView nameTV = (TextView) convertView.findViewById(R.id.upcomingReminderItemTV);
                 TextView timeTV = (TextView) convertView.findViewById(R.id.upcomingReminderTimeTV);
 
+
                 String[] info = getItem(position).split("\\|");
                 Calendar cal = Calendar.getInstance();
                 cal.setTimeInMillis(Long.parseLong(info[1]));
 
                 nameTV.setText(info[0]);
-                timeTV.setText(String.format(Locale.getDefault(), "%02d-%02d-%04d at %02d:%02d",
-                        cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH),
-                        cal.get(Calendar.YEAR), cal.get(Calendar.HOUR_OF_DAY),
-                        cal.get(Calendar.MINUTE)));
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm",
+                        Locale.getDefault());
+                String dateString = sdf.format(cal.getTime());
+                timeTV.setText(dateString);
             }
             return convertView;
         }

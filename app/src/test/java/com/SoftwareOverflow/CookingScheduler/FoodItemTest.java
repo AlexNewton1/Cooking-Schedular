@@ -17,7 +17,7 @@ public class FoodItemTest {
         foodItem = new FoodItem(name);
     }
 
-    public void populateTestItem(int num){
+    private void populateTestItem(int num){
         if(num == 1 || num ==2) foodItem.addStage(stage1, Integer.toString(time1));
         if(num ==2) foodItem.addStage(stage2, Integer.toString(time2));
     }
@@ -47,12 +47,26 @@ public class FoodItemTest {
     @Test
     public void testUpdateStage() throws Exception {
         populateTestItem(2);
-        String newString = "NEW_STRING|10";
         int newTotalTime = time2 + 10;
-        foodItem.updateStage(newString, 0);
+        foodItem.updateStage("newStageName", 10, 0);
 
+        assertEquals("newStageName", foodItem.getStages().get(0).getName());
         assertEquals(2, foodItem.numStages);
         assertEquals(newTotalTime, foodItem.totalTime);
+    }
+
+    @Test
+    public void testEffectiveTotalTime() throws Exception{
+        setUp();
+        populateTestItem(2);
+        foodItem.setStagesEffectiveTime();
+
+        int effectiveStageTime;
+        effectiveStageTime = foodItem.getStages().get(0).getTime();
+        assertEquals(time1, effectiveStageTime);
+
+        effectiveStageTime+=foodItem.getStages().get(1).getTime();
+        assertEquals(time1+time2, effectiveStageTime);
     }
 
 }

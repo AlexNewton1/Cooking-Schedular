@@ -18,7 +18,7 @@ public class MealDatabase extends SQLiteOpenHelper {
     private static final int DB_VERSION = 1;
     private Context context;
 
-    public MealDatabase(Context c, SQLiteDatabase.CursorFactory factory) {
+    protected MealDatabase(Context c, SQLiteDatabase.CursorFactory factory) {
         super(c, DB_NAME, factory, DB_VERSION);
         this.context = c;
     }
@@ -37,7 +37,11 @@ public class MealDatabase extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean addMeal(String mealName, String jsonString, String notes, int rowToUpdate) {
+    /**
+     * @return  true if meal saved or updated successfully. false if a meal with the same
+     *          mealName is found
+     */
+    protected boolean addMeal(String mealName, String jsonString, String notes, int rowToUpdate) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_MEAL_NAME, mealName);
@@ -72,7 +76,7 @@ public class MealDatabase extends SQLiteOpenHelper {
      * @return - true if duplicate meal name found in database
      * - false if no duplicate found
      */
-    public boolean isDuplicateMeal(SQLiteDatabase db, String mealName) {
+    private boolean isDuplicateMeal(SQLiteDatabase db, String mealName) {
         String[] columns = new String[]{COLUMN_MEAL_NAME};
         String whereClause = COLUMN_MEAL_NAME + "= ?";
         String[] whereArgs = new String[]{mealName};
@@ -83,7 +87,7 @@ public class MealDatabase extends SQLiteOpenHelper {
         return (numMatches != 0); //return true if and only if no matches
     }
 
-    public int getRowNum() {
+    protected int getRowNum() {
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT * FROM " + TABLE_MEALS;
         Cursor cursor = db.rawQuery(query, null);
@@ -93,7 +97,7 @@ public class MealDatabase extends SQLiteOpenHelper {
         return rows;
     }
 
-    public int getIdFromName(String mealName) {
+    protected int getIdFromName(String mealName) {
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT * FROM " + TABLE_MEALS + " WHERE " + COLUMN_MEAL_NAME + " = '"
                 + mealName + "'";
@@ -109,7 +113,7 @@ public class MealDatabase extends SQLiteOpenHelper {
      * @param searchString - Returns all meals with searchString contained within that meal name
      * @return - String Array = {MealName, JsonString (used to convert back to FoodItem), Notes}
      */
-    public String[] getSavedMeals(String searchString) {
+    protected String[] getSavedMeals(String searchString) {
         try {
             String mealNameQuery = "%" + searchString + "%";
             String query = "SELECT * FROM " + TABLE_MEALS + " WHERE " + COLUMN_MEAL_NAME + " LIKE "
@@ -135,7 +139,7 @@ public class MealDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public boolean deleteMeal(String mealName) {
+    protected boolean deleteMeal(String mealName) {
         try {
             SQLiteDatabase db = getWritableDatabase();
             String query = "SELECT * FROM " + TABLE_MEALS + " WHERE " + COLUMN_MEAL_NAME + " = '"

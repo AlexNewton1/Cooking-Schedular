@@ -8,18 +8,18 @@ import android.support.annotation.NonNull;
 public class NotificationClass implements Comparable<NotificationClass>{
 
     public int id;
-    public long alarmTime;
+    private long alarmTime;
     public String name;
     public int cookingTime;
 
-    public NotificationClass(int cookingTime, Long alarmTimeMillis, String name, int id) {
+    protected NotificationClass(int cookingTime, Long alarmTimeMillis, String name, int id) {
         this.id = id;
         this.alarmTime = alarmTimeMillis;
         this.name = name;
         this.cookingTime = cookingTime;
     }
 
-    public String getInfo(){
+    protected String getInfo(){
         return name + "|" + alarmTime;
     }
 

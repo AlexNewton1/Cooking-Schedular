@@ -12,7 +12,8 @@
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:hint="@string/new_item_name" />
+        android:hint="@string/new_item_name"
+        />
 
     <View
         android:layout_width="fill_parent"
@@ -25,19 +26,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/stages"
-        android:textSize="18sp"
-        android:textColor="@android:color/black"/>
+        android:textSize="18sp" />
 
     <TextView
         android:layout_gravity="center_horizontal"
+        android:gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/drag_to_reorder"
         android:textSize="12sp"
-        android:textStyle="italic"
-        android:textColor="@android:color/black"/>
+        android:textStyle="italic" />
 
     <LinearLayout
+        android:layout_marginTop="16dp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:weightSum="100">
@@ -94,6 +95,7 @@
 
 
     <ListView
+        android:paddingBottom="25dp"
         android:id="@+id/stagesListView"
         android:layout_width="match_parent"
         android:layout_height="0dp"

@@ -2,4 +2,5 @@
 <resources>
     <item name="orange" type="color">#FFFFBB33</item>
     <item name="darkgreen" type="color">#FF669900</item>
+    <item name="lightgrey" type="color">#C5E1A5</item>
 </resources>
