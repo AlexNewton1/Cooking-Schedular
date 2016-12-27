@@ -17,6 +17,7 @@
     <string name="load_saved_meal">Load Saved Meal</string>
     <string name="logo">Application logo</string>
     <string name="upgrade_to_unlock">Please upgrade to unlock this feature</string>
+    <string name="error_iab">Error. Please Try again.</string>
 
 
     <!--......................................ADD ITEM SCREEN STRINGS........................................................-->
@@ -72,6 +73,8 @@
     <string name="error_deleting_reminder">Error Deleting Reminder</string>
     <string name="reminder_deleted">Reminder Deleted</string>
     <string name="enter_meal_name">Please enter a name for the meal</string>
+    <string name="edit_meal">Edit Meal</string>
+    <string name="edit_meal_msg">Editing the meal will delete any reminders associated with this meal</string>
 
 
     <!--............................................UPGRADE PAGE STRINGS........................................................-->

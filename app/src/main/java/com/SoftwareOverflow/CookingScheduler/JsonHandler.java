@@ -26,22 +26,24 @@ class JsonHandler {
      * @param c - context
      * @return - list of NotificationClass objects saved in sharedPrefs (contains alarm times etc)
      */
-     static List<NotificationClass> getAlarmList(Context c){
+    static List<NotificationClass> getAlarmList(Context c, boolean all) {
         SharedPreferences sp = c.getApplicationContext()
                 .getSharedPreferences("alarms", Context.MODE_PRIVATE);
-        String infoString = sp.getString("alarmInfo", "");
+        String infoString;
+        if (all) infoString = sp.getString("alarmInfo", "");
+        else infoString = sp.getString("singleMeal", "");
         List<NotificationClass> alarmList = new ArrayList<>();
 
-        if(!infoString.isEmpty()) {
-            Type type = new TypeToken<NotificationClass>() {}.getType();
+        if (!infoString.isEmpty()) {
+            Type type = new TypeToken<NotificationClass>() {
+            }.getType();
 
             try {
                 for (String info : infoString.split("\\|\\|\\|")) {
                     NotificationClass alarm = gson.fromJson(info, type);
                     alarmList.add(alarm);
                 }
-            }
-            catch(JsonSyntaxException ex){
+            } catch (JsonSyntaxException ex) {
                 Toast.makeText(c, "Error loading values", Toast.LENGTH_SHORT).show();
             }
         }
@@ -49,40 +51,47 @@ class JsonHandler {
     }
 
     /**
-     * @param c - context
+     * @param c         - context
      * @param alarmList - List of NotificationClass objects to be saved in SharedPreferences
      */
-    static void putAlarmList(Context c, List<NotificationClass> alarmList){
+    static void putAlarmList(Context c, List<NotificationClass> alarmList, boolean all) {
         SharedPreferences sp = c.getApplicationContext()
                 .getSharedPreferences("alarms", Context.MODE_PRIVATE);
+
+
         StringBuilder sb = new StringBuilder();
-        for(NotificationClass alarm: alarmList) sb.append(gson.toJson(alarm)).append("|||");
-        sp.edit().putString("alarmInfo", sb.toString()).apply();
+        for (NotificationClass alarm : alarmList) sb.append(gson.toJson(alarm)).append("|||");
+        if (all) {
+            sp.edit().putString("alarmInfo", sb.toString()).apply();
+        } else {
+            sp.edit().putString("singleMeal", sb.toString()).apply();
+        }
     }
 
-    static List<FoodItem> getFoodItemList(Context c, String jsonString){
-        Type foodType = new TypeToken<FoodItem>(){}.getType();
+
+    static List<FoodItem> getFoodItemList(Context c, String jsonString) {
+        Type foodType = new TypeToken<FoodItem>() {
+        }.getType();
         List<FoodItem> foodItemList = new ArrayList<>();
 
         try {
-            for(String foodItem : jsonString.split("\\|\\|\\|")){
-                if(!foodItem.matches("")) {
+            for (String foodItem : jsonString.split("\\|\\|\\|")) {
+                if (!foodItem.matches("")) {
                     FoodItem food = gson.fromJson(foodItem, foodType);
                     foodItemList.add(food);
                 }
             }
 
-        }
-        catch (JsonSyntaxException ex){
+        } catch (JsonSyntaxException ex) {
             Toast.makeText(c, "Error loading values", Toast.LENGTH_SHORT).show();
         }
 
         return foodItemList;
     }
 
-    static String getFoodItemJsonString(List<FoodItem> foodItemList){
+    static String getFoodItemJsonString(List<FoodItem> foodItemList) {
         StringBuilder sb = new StringBuilder();
-        for (FoodItem food: foodItemList) sb.append(gson.toJson(food)).append("|||");
+        for (FoodItem food : foodItemList) sb.append(gson.toJson(food)).append("|||");
         return sb.toString();
     }
 

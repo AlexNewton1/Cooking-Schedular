@@ -40,7 +40,7 @@ public class UpgradeScreen extends Activity {
     }
 
     protected void upgradePurchased(){
-        statusTV.setTextColor(ContextCompat.getColor(this, R.color.darkgreen));
+        statusTV.setTextColor(ContextCompat.getColor(this, R.color.dark_green));
         statusTV.setText(getResources().getString(R.string.upgraded));
         upgradeButton.setEnabled(false);
     }

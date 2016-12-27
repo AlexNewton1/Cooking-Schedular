@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.SoftwareOverflow.CookingScheduler.ShowTimes">
+    tools:context="com.SoftwareOverflow.CookingScheduler.ShowTimes"
+    android:baselineAligned="false">
 
 
     <com.google.android.gms.ads.AdView
@@ -96,7 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:weightSum="2">
+            android:weightSum="3">
 
             <Button
                 style="@style/Widget.AppCompat.ButtonBar"
@@ -105,6 +106,14 @@
                 android:layout_weight="1"
                 android:onClick="saveMeal"
                 android:text="@string/save_meal" />
+
+            <Button
+            style="@style/Base.Widget.AppCompat.ButtonBar"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:id="@+id/edit_meal"
+            android:text="@string/edit_meal"/>
 
             <Button
                 style="@style/Widget.AppCompat.ButtonBar"

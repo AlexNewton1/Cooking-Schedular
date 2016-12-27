@@ -100,7 +100,7 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
     }
 
     private void showUpcomingReminders() {
-        final List<NotificationClass> alarmList = JsonHandler.getAlarmList(this);
+        final List<NotificationClass> alarmList = JsonHandler.getAlarmList(this, true);
         Collections.sort(alarmList);
 
         if (alarmList.size() > 0) {
@@ -128,7 +128,7 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     for (NotificationClass alarm : alarmList) {
-                                        ShowTimes.cancelPendingIntent(
+                                        NotificationReceiver.cancelPendingIntent(
                                                 alarm.id, HomeScreen.this, false);
                                     }
                                     dialog.dismiss();
@@ -167,7 +167,7 @@ public class HomeScreen extends Activity implements Dialog.OnClickListener {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     NotificationClass alarm = alarmList.get(position);
-                                    ShowTimes.cancelPendingIntent(
+                                    NotificationReceiver.cancelPendingIntent(
                                             alarm.id, HomeScreen.this, true);
                                     alertDialog.dismiss();
                                     showUpcomingReminders();

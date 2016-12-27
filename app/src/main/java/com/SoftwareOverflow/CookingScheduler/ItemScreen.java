@@ -129,7 +129,8 @@ public class ItemScreen extends Activity implements View.OnClickListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    AdRequest adRequest = new AdRequest.Builder().build();
+                    AdRequest adRequest = new AdRequest.Builder()
+                            .addTestDevice("2A0E7D2865A3C592033F3707402D0BBB").build();
                     adView.loadAd(adRequest);
                 }
             });
@@ -160,7 +161,6 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                         adapterStrings[i] = foodItemList.get(i).getInfo();
                     }
                     foodItem.addNameToStages();
-                    foodItem.setStagesEffectiveTime();
                     showItemsLV(adapterStrings);
                     addItemDialog.dismiss();
                 }
@@ -285,7 +285,6 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                             foodItemList.add(foodItem); //add updated
                             foodItem.name = itemName.getText().toString();
                             foodItem.addNameToStages();
-                            foodItem.setStagesEffectiveTime();
 
                             String[] adapterStrings = new String[foodItemList.size()];
                             for (int i = 0; i < foodItemList.size(); i++) {
@@ -416,10 +415,15 @@ public class ItemScreen extends Activity implements View.OnClickListener {
                         }
                     }
                     if (chosenTime.getTimeInMillis() >= earliestTime.getTimeInMillis()) {
+
+                        setEffectiveTotalTimes();
+
                         String jsonString = JsonHandler.getFoodItemJsonString(foodItemList);
                         startActivity(new Intent(ItemScreen.this, ShowTimes.class)
                                 .putExtra("jsonString", jsonString)
                                 .putExtra("readyTimeCal", chosenTime)
+                                .putExtra("origin", "ItemScreen")
+                                .putExtra("currentItem", 0)
                                 .putExtra("reminders", reminderCheckBox.isChecked())
                                 .putExtra("currentItem", 0));
 
@@ -443,6 +447,12 @@ public class ItemScreen extends Activity implements View.OnClickListener {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MINUTE, foodItemList.get(0).totalTime);
         return cal;
+    }
+
+    public void setEffectiveTotalTimes(){
+        for(FoodItem food : foodItemList) {
+            food.setEffectiveTotalTimes();
+        }
     }
 
     public void saveMeal(View v) {

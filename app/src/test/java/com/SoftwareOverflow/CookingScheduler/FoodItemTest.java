@@ -59,14 +59,26 @@ public class FoodItemTest {
     public void testEffectiveTotalTime() throws Exception{
         setUp();
         populateTestItem(2);
-        foodItem.setStagesEffectiveTime();
 
-        int effectiveStageTime;
-        effectiveStageTime = foodItem.getStages().get(0).getTime();
-        assertEquals(time1, effectiveStageTime);
+        foodItem.addStage("stage3", String.valueOf(17));
+        foodItem.addStage("stage4", String.valueOf(13));
+        foodItem.addStage("stage5", String.valueOf(1));
+        foodItem.addStage("stage6", String.valueOf(10));
+        foodItem.addStage("stage7", String.valueOf(35));
+        foodItem.addStage("stage8", String.valueOf(46));
+        foodItem.addStage("stage9", String.valueOf(5));
 
-        effectiveStageTime+=foodItem.getStages().get(1).getTime();
-        assertEquals(time1+time2, effectiveStageTime);
+        foodItem.setEffectiveTotalTimes();
+
+        assertEquals(5, foodItem.getStages().get(0).getEffectiveTotalTime());
+        assertEquals(20, foodItem.getStages().get(1).getEffectiveTotalTime());
+        assertEquals(37, foodItem.getStages().get(2).getEffectiveTotalTime());
+        assertEquals(50, foodItem.getStages().get(3).getEffectiveTotalTime());
+        assertEquals(51, foodItem.getStages().get(4).getEffectiveTotalTime());
+        assertEquals(61, foodItem.getStages().get(5).getEffectiveTotalTime());
+        assertEquals(96, foodItem.getStages().get(6).getEffectiveTotalTime());
+        assertEquals(142, foodItem.getStages().get(7).getEffectiveTotalTime());
+        assertEquals(147, foodItem.getStages().get(8).getEffectiveTotalTime());
     }
 
 }

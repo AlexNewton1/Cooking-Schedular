@@ -68,12 +68,16 @@ class FoodItem implements Comparable<FoodItem> {
         return name + "|" + totalTime + "|" + numStages;
     }
 
-    void setStagesEffectiveTime() {
-        int effectiveStageTime = 0;
 
-        for(int i=stages.size()-1; i>=0; i--){
-            effectiveStageTime += stages.get(i).getTime();
-            stages.get(i).effectiveTotalTime = effectiveStageTime;
+    void setEffectiveTotalTimes(){
+
+        for (int i = 0; i < stages.size(); i++) {
+            int total = 0;
+            for (int j = i; j >= 0; j--) {
+                total += stages.get(j).getTime();
+            }
+
+            stages.get(i).setEffectiveTotalTime(total);
         }
     }
 
@@ -115,14 +119,18 @@ class FoodItem implements Comparable<FoodItem> {
             return effectiveTotalTime;
         }
 
+        void setEffectiveTotalTime(int time){
+            this.effectiveTotalTime = time;
+        }
+
         String getFoodItemName() {
             return foodItemName;
         }
 
         @Override
         public int compareTo(@NonNull Stage otherStage) {
-            if (effectiveTotalTime > otherStage.effectiveTotalTime) return 1;
-            else if (effectiveTotalTime < otherStage.effectiveTotalTime) return -1;
+            if (effectiveTotalTime > otherStage.effectiveTotalTime) return -1;
+            else if (effectiveTotalTime < otherStage.effectiveTotalTime) return 1;
             else return 0;
         }
 
